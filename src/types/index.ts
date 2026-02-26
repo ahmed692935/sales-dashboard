@@ -48,3 +48,21 @@ export interface TopPerformer {
   wonLeads: number;
   change: string;
 }
+
+/** Map of route-prefix → sidebar items shown for that section */
+export interface SidebarSectionConfig {
+  /** matches if the current pathname starts with any of these prefixes */
+  match: string[];
+  items: SidebarItem[];
+}
+
+export type FlowStatus = "DRAFT" | "DEPRECATED" | "PUBLISHED" | "THROTTLED";
+
+export interface FlowRow {
+  id: string;
+  name: string;
+  flowId: string;
+  category: string;
+  status: FlowStatus;
+  lastEdited: string;
+}

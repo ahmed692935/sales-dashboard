@@ -13,6 +13,8 @@ import Dashboard from "../pages/Dashboard";
 
 import type { ReactNode } from "react";
 import type { LayoutType, RouteConfig } from "../types";
+import Contacts from "../pages/Contacts";
+import Flows from "../pages/Flows";
 
 const routeConfigs: RouteConfig[] = [
   {
@@ -20,6 +22,18 @@ const routeConfigs: RouteConfig[] = [
     element: <Dashboard />,
     layout: "dashboard",
     label: "Dashboard",
+  },
+  {
+    path: "/contacts",
+    element: <Contacts />,
+    layout: "simple",
+    label: "Contacts",
+  },
+  {
+    path: "/flows",
+    element: <Flows />,
+    layout: "dashboard",
+    label: "Flows",
   },
 ];
 
