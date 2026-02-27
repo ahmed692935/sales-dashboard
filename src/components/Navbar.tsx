@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Inbox,
   Megaphone,
@@ -50,6 +50,7 @@ interface NavbarProps {
 
 const Navbar = ({ onToggleSidebar, sidebarOpen }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="bg-white border-b border-slate-200 shrink-0 z-40 relative">
@@ -68,14 +69,20 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }: NavbarProps) => {
           <span className="text-xs text-slate-400 leading-none mb-1">
             3 managers
           </span>
-          <span className="text-2xl font-bold text-slate-800 leading-none tracking-tight">
+          <span
+            className="text-2xl font-bold cursor-pointer text-slate-800 leading-none tracking-tight"
+            onClick={() => navigate("/")}
+          >
             LOGO
           </span>
         </div>
 
         {/* Mobile logo */}
         <div className="lg:hidden flex-1">
-          <span className="text-xl font-bold text-slate-800 leading-none tracking-tight">
+          <span
+            className="text-xl font-bold cursor-pointer text-slate-800 leading-none tracking-tight"
+            onClick={() => navigate("/")}
+          >
             LOGO
           </span>
         </div>
