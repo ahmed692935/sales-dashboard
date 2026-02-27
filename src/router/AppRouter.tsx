@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 import type { LayoutType, RouteConfig } from "../types";
 import Contacts from "../pages/Contacts";
 import Flows from "../pages/Flows";
+import TeamInbox from "../pages/TeamInbox";
 
 const routeConfigs: RouteConfig[] = [
   {
@@ -34,6 +35,12 @@ const routeConfigs: RouteConfig[] = [
     element: <Flows />,
     layout: "dashboard",
     label: "Flows",
+  },
+  {
+    path: "/inbox",
+    element: <TeamInbox />,
+    layout: "chat",
+    label: "Team Inbox",
   },
 ];
 

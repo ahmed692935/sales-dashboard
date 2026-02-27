@@ -70,7 +70,7 @@ const StageBadge = ({ stage }: { stage: StageType }) => (
 // ─── Toolbar Icon Button ──────────────────────────────────────────────────────
 
 const IconBtn = ({ icon: Icon }: { icon: React.ElementType }) => (
-  <button className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+  <button className="w-8 h-8 flex items-center justify-center rounded-md text-gray-700 hover:text-slate-700 hover:bg-slate-100 transition-colors">
     <Icon size={15} />
   </button>
 );
@@ -195,7 +195,7 @@ const Contacts = () => {
           <div className="relative">
             <Search
               size={13}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-600"
             />
             <input
               type="text"
@@ -251,7 +251,7 @@ const Contacts = () => {
               ].map((h) => (
                 <th
                   key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-600 whitespace-nowrap"
+                  className="px-4 py-3 text-left text-[13px] font-bold text-black whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -290,31 +290,31 @@ const Contacts = () => {
 
                   {/* Name */}
                   <td className="px-4 py-3.5">
-                    <p className="text-xs font-semibold text-slate-800">
+                    <p className="text-[13px] font-semibold text-black">
                       {contact.name}
                     </p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
+                    <p className="text-[11px] text-slate-500 mt-0.5">
                       {contact.subName}
                     </p>
                   </td>
 
                   {/* Email */}
-                  <td className="px-4 py-3.5 text-xs text-slate-600">
+                  <td className="px-4 py-3.5 text-xs text-slate-800">
                     {contact.email}
                   </td>
 
                   {/* Phone */}
-                  <td className="px-4 py-3.5 text-xs text-slate-600 whitespace-nowrap">
+                  <td className="px-4 py-3.5 text-xs text-slate-800 whitespace-nowrap">
                     {contact.phone}
                   </td>
 
                   {/* City */}
-                  <td className="px-4 py-3.5 text-xs text-slate-600">
+                  <td className="px-4 py-3.5 text-xs text-slate-800">
                     {contact.city}
                   </td>
 
                   {/* Qualification */}
-                  <td className="px-4 py-3.5 text-xs text-slate-600">
+                  <td className="px-4 py-3.5 text-xs text-slate-800">
                     {contact.qualification}
                   </td>
 
@@ -326,13 +326,13 @@ const Contacts = () => {
                   {/* Actions */}
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1">
-                      <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors">
+                      <button className="w-7 h-7 flex items-center justify-center rounded-md text-black hover:text-violet-600 hover:bg-violet-50 transition-colors">
                         <Pencil size={13} />
                       </button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                      <button className="w-7 h-7 flex items-center justify-center rounded-md text-black hover:text-red-500 hover:bg-red-50 transition-colors">
                         <Trash2 size={13} />
                       </button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                      <button className="w-7 h-7 flex items-center justify-center rounded-md text-black hover:text-slate-600 hover:bg-slate-100 transition-colors">
                         <Share2 size={13} />
                       </button>
                     </div>
@@ -340,7 +340,7 @@ const Contacts = () => {
 
                   {/* View Details */}
                   <td className="px-4 py-3.5">
-                    <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors">
+                    <button className="w-7 h-7 flex items-center justify-center rounded-md text-black hover:text-violet-600 hover:bg-violet-50 transition-colors">
                       <Eye size={15} />
                     </button>
                   </td>

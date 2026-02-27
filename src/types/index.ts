@@ -6,6 +6,7 @@ export interface NavItem {
   label: string;
   path: string;
   icon: ReactNode;
+  disabled?: boolean;
 }
 
 export interface SidebarItem {
@@ -13,6 +14,7 @@ export interface SidebarItem {
   path: string;
   icon: ReactNode;
   badge?: number;
+  disabled?: boolean; 
 }
 
 export interface RouteConfig {

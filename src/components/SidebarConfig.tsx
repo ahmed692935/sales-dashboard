@@ -19,11 +19,13 @@ const sidebarSections: SidebarSectionConfig[] = [
         label: "Flow Dashboard",
         path: "/flows",
         icon: <LayoutDashboard size={16} />,
+        disabled: false,
       },
       {
         label: "Templates",
         path: "/flows/templates",
         icon: <FileText size={16} />,
+        disabled: true,
       },
     ],
   },
@@ -34,11 +36,36 @@ const sidebarSections: SidebarSectionConfig[] = [
   {
     match: ["/"],
     items: [
-      { label: "Sales", path: "/dashboard", icon: <TrendingUp size={16} /> },
-      { label: "Marketing", path: "/marketing", icon: <Megaphone size={16} /> },
-      { label: "Team Members", path: "/users", icon: <Users size={16} /> },
-      { label: "Team Members", path: "/teams", icon: <Layers size={16} /> },
-      { label: "General", path: "/settings", icon: <Settings size={16} /> },
+      {
+        label: "Sales",
+        path: "/dashboard",
+        icon: <TrendingUp size={16} />,
+        disabled: true,
+      },
+      {
+        label: "Marketing",
+        path: "/marketing",
+        icon: <Megaphone size={16} />,
+        disabled: true,
+      },
+      {
+        label: "Team Members",
+        path: "/users",
+        icon: <Users size={16} />,
+        disabled: true,
+      },
+      {
+        label: "Team Members",
+        path: "/teams",
+        icon: <Layers size={16} />,
+        disabled: true,
+      },
+      {
+        label: "General",
+        path: "/settings",
+        icon: <Settings size={16} />,
+        disabled: true,
+      },
     ],
   },
 ];

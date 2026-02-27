@@ -26,7 +26,7 @@ const leadStats: LeadStat[] = [
     change: "+11.02%",
     positive: true,
     color: "#1e293b",
-    borderColor: "border-l-slate-800",
+    borderColor: "border-b-slate-800",
   },
   {
     label: "Qualified",
@@ -34,7 +34,7 @@ const leadStats: LeadStat[] = [
     change: "+11.02%",
     positive: true,
     color: "#f59e0b",
-    borderColor: "border-l-amber-400",
+    borderColor: "border-b border-[#D99236]",
   },
   {
     label: "Proposal",
@@ -42,7 +42,7 @@ const leadStats: LeadStat[] = [
     change: "+11.02%",
     positive: true,
     color: "#eab308",
-    borderColor: "border-l-yellow-400",
+    borderColor: "border-b-blue-500",
   },
   {
     label: "Negotiation",
@@ -50,7 +50,7 @@ const leadStats: LeadStat[] = [
     change: "+11.02%",
     positive: true,
     color: "#22c55e",
-    borderColor: "border-l-green-500",
+    borderColor: "border-b border-[#DEC141]",
   },
   {
     label: "Won",
@@ -58,7 +58,7 @@ const leadStats: LeadStat[] = [
     change: "+11.02%",
     positive: true,
     color: "#16a34a",
-    borderColor: "border-l-green-600",
+    borderColor: "border-b-green-500",
   },
   {
     label: "Lost",
@@ -66,34 +66,34 @@ const leadStats: LeadStat[] = [
     change: "+11.02%",
     positive: false,
     color: "#ef4444",
-    borderColor: "border-l-red-500",
+    borderColor: "border-b-red-500",
   },
 ];
 
 const barSegments = [
-  { label: "New Leads", pct: 13, color: "#1e293b" },
-  { label: "Qualified", pct: 23, color: "#f59e0b" },
-  { label: "Proposal", pct: 7, color: "#eab308" },
-  { label: "Negotiation", pct: 31, color: "#22c55e" },
-  { label: "Won", pct: 22, color: "#ef4444" },
+  { label: "New Leads", pct: 13, color: "#1B1A1A" },
+  { label: "Qualified", pct: 23, color: "#D99236" },
+  { label: "Proposal", pct: 7, color: "#DEC141" },
+  { label: "Negotiation", pct: 31, color: "#5EB95C" },
+  { label: "Won", pct: 22, color: "#FF0000" },
 ];
 
 const pieData = [
-  { name: "New Leads", value: 14, color: "#1e293b" },
-  { name: "Qualified", value: 22, color: "#f59e0b" },
-  { name: "Proposal", value: 18, color: "#eab308" },
-  { name: "Negotiation", value: 16, color: "#22c55e" },
-  { name: "Won", value: 15, color: "#16a34a" },
-  { name: "Lost", value: 15, color: "#ef4444" },
+  { name: "New Leads", value: 14, color: "#9400BD" },
+  { name: "Qualified", value: 22, color: "#FF7F3A" },
+  { name: "Proposal", value: 18, color: "#F91E4A" },
+  { name: "Negotiation", value: 16, color: "#E85678" },
+  { name: "Won", value: 15, color: "#3DC269" },
+  { name: "Lost", value: 15, color: "#FF0000" },
 ];
 
 const funnelStages = [
-  { label: "Leads", pct: 30, color: "#1e293b", widthPct: 100 },
-  { label: "Qualified", pct: 30, color: "#f59e0b", widthPct: 82 },
-  { label: "Proposal", pct: 30, color: "#eab308", widthPct: 64 },
-  { label: "Negotiation", pct: 30, color: "#22c55e", widthPct: 48 },
-  { label: "Won", pct: 30, color: "#8b5cf6", widthPct: 34 },
-  { label: "Lost", pct: 30, color: "#ef4444", widthPct: 20 },
+  { label: "Leads", pct: 30, color: "#35353A", widthPct: 100 },
+  { label: "Qualified", pct: 30, color: "#37B5EF", widthPct: 82 },
+  { label: "Proposal", pct: 30, color: "#DEC141", widthPct: 64 },
+  { label: "Negotiation", pct: 30, color: "#7364FF", widthPct: 48 },
+  { label: "Won", pct: 30, color: "#F91E4A", widthPct: 34 },
+  { label: "Lost", pct: 30, color: "#10B981", widthPct: 20 },
 ];
 
 const topPerformers: TopPerformer[] = [
@@ -154,31 +154,33 @@ const teamMembers: TeamMemberRow[] = [
 
 const StatCard = ({ stat }: { stat: LeadStat }) => (
   <div
-    className={`bg-white rounded-xl border-l-4 ${stat.borderColor} p-4 shadow-sm flex-1 min-w-[130px]`}
+    className={`bg-white rounded-xl border-b-4 ${stat.borderColor} p-4 shadow-sm flex-1 min-w-[130px]`}
   >
-    <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
-    <p className="text-2xl font-bold text-slate-800 mt-1 leading-none">
-      {stat.value}
-    </p>
-    <div
-      className={`flex items-center gap-1 mt-2 text-xs font-semibold ${stat.positive ? "text-emerald-600" : "text-red-500"}`}
-    >
-      {stat.positive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-      {stat.change}
+    <p className="text-sm text-[#1C1C1C] font-semibold">{stat.label}</p>
+    <div className="flex justify-between">
+      <p className="text-2xl font-normal text-[#1C1C1C] mt-2 leading-none">
+        {stat.value}
+      </p>
+      <div
+        className={`flex items-center gap-1 mt-2 text-xs font-semibold ${stat.positive ? "text-[#1C1C1C]" : "text-[#1C1C1C]"}`}
+      >
+        {stat.positive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+        {stat.change}
+      </div>
     </div>
   </div>
 );
 
 const HorizontalBarChart = () => (
   <div className="bg-white rounded-xl shadow-sm p-5">
-    <h3 className="text-sm font-semibold text-slate-800 mb-5">
+    <h3 className="text-xl font-bold text-black mb-5">
       Sales Horizontal Bar Chart
     </h3>
     {/* Percentages row */}
     <div className="flex mb-2">
       {barSegments.map((seg) => (
         <div key={seg.label} style={{ flex: seg.pct }} className="text-center">
-          <span className="text-xs font-semibold text-slate-700">
+          <span className="text-base font-semibold text-slate-700">
             {seg.pct}%
           </span>
         </div>
@@ -210,9 +212,7 @@ const HorizontalBarChart = () => (
 
 const SalesPieChart = () => (
   <div className="bg-white rounded-xl shadow-sm p-5 flex-1 min-w-[220px]">
-    <h3 className="text-sm font-semibold text-slate-800 mb-2">
-      Sales Pie Chart
-    </h3>
+    <h3 className="text-lg font-bold text-black mb-2">Sales Pie Chart</h3>
     <div className="flex flex-col items-center">
       <ResponsiveContainer width="100%" height={180}>
         <PieChart>
@@ -242,7 +242,7 @@ const SalesPieChart = () => (
             textAnchor="middle"
             dominantBaseline="middle"
             className="text-slate-800"
-            style={{ fontSize: 18, fontWeight: 700, fill: "#1e293b" }}
+            style={{ fontSize: 13, fontWeight: 700, fill: "#1e293b" }}
           >
             14.00
           </text>
@@ -251,21 +251,24 @@ const SalesPieChart = () => (
             y="57%"
             textAnchor="middle"
             dominantBaseline="middle"
-            style={{ fontSize: 9, fill: "#94a3b8" }}
+            style={{ fontSize: 12, fill: "#94a3b8" }}
           >
             Total Leads
           </text>
         </PieChart>
       </ResponsiveContainer>
       {/* Legend */}
-      <div className="grid grid-cols-3 gap-x-3 gap-y-1 mt-1">
+      <div className="flex gap-x-1 justify-center gap-y-1 mt-1 flex-wrap max-w-[250px]">
         {pieData.map((d) => (
-          <div key={d.name} className="flex items-center gap-1">
+          <div
+            key={d.name}
+            className="flex border p-[1px] px-[2px] border-gray-300 items-center gap-1"
+          >
             <div
               className="w-2 h-2 rounded-full shrink-0"
               style={{ backgroundColor: d.color }}
             />
-            <span className="text-[10px] text-slate-500 truncate">
+            <span className="text-[11px] text-slate-500 truncate">
               {d.name}
             </span>
           </div>
@@ -277,9 +280,7 @@ const SalesPieChart = () => (
 
 const SalesFunnelChart = () => (
   <div className="bg-white rounded-xl shadow-sm p-5 flex-1 min-w-[220px]">
-    <h3 className="text-sm font-semibold text-slate-800 mb-4">
-      Sales Funnel Chart
-    </h3>
+    <h3 className="text-lg font-bold text-black mb-4">Sales Funnel Chart</h3>
     <div className="flex gap-4 items-start">
       {/* Funnel */}
       <div className="flex-1 flex flex-col items-center gap-1">
@@ -303,7 +304,7 @@ const SalesFunnelChart = () => (
               className="w-2 h-2 rounded-full shrink-0"
               style={{ backgroundColor: stage.color }}
             />
-            <span className="text-[10px] text-slate-500 whitespace-nowrap">
+            <span className="text-[11px] text-slate-500 whitespace-nowrap">
               {stage.label}-{stage.pct} %
             </span>
           </div>
@@ -315,17 +316,18 @@ const SalesFunnelChart = () => (
 
 const TopPerformersPanel = () => (
   <div className="bg-white rounded-xl shadow-sm p-5 flex-1 min-w-[200px]">
-    <h3 className="text-sm font-semibold text-slate-800 mb-4">
-      Top Performers
-    </h3>
+    <h3 className="text-lg font-bold text-black mb-4">Top Performers</h3>
     <div className="flex flex-col gap-3">
       {topPerformers.map((p, i) => (
-        <div key={i} className="flex items-center gap-3">
+        <div
+          key={i}
+          className="flex items-center border p-2 border-gray-300 rounded-lg gap-3"
+        >
           <div className="w-7 h-7 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold shrink-0">
             {p.rank}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-700 truncate">
+            <p className="text-sm font-normal text-slate-700 truncate">
               {p.name}
             </p>
             <p className="text-[10px] text-slate-400">{p.role}</p>
@@ -401,12 +403,12 @@ const Dashboard = () => {
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 transition-colors">
-              <Settings size={14} />
+              <Settings size={14} className="text-black" />
             </button>
             <div className="relative">
               <Search
                 size={13}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-600"
               />
               <input
                 type="text"
@@ -420,7 +422,7 @@ const Dashboard = () => {
               (Icon, i) => (
                 <button
                   key={i}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-md text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-colors"
                 >
                   <Icon size={14} />
                 </button>
@@ -453,7 +455,7 @@ const Dashboard = () => {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="px-4 py-3 text-left text-xs font-semibold text-slate-500"
+                    className="px-4 py-3 text-left text-[13px] font-bold text-black"
                   >
                     {h}
                   </th>
@@ -475,33 +477,33 @@ const Dashboard = () => {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-xs font-semibold text-slate-800">
+                    <p className="text-[13px] font-semibold text-black">
                       {member.name}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-slate-500">
                         {member.employeeId}
                       </p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-xs text-slate-800">
                     {member.ticketsAssigned}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-xs text-slate-800">
                     {member.ticketsResolved}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-xs text-slate-800">
                     {member.ticketsPending}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-xs text-slate-800">
                     {member.ticketsPending}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-xs text-slate-800">
                     {member.wonLeads}
                   </td>
                   <td className="px-4 py-3">
-                    <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-violet-600 transition-colors">
+                    <button className="w-7 h-7 flex items-center justify-center rounded-md text-black hover:bg-slate-100 hover:text-violet-600 transition-colors">
                       <Eye size={14} />
                     </button>
                   </td>

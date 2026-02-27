@@ -13,7 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Plus,
+//   Plus,
 } from "lucide-react";
 import type { FlowRow, FlowStatus } from "../types";
 import CreateFlowModal from "../components/FlowModal";
@@ -47,12 +47,12 @@ const ROWS_PER_PAGE = 10;
 // ─── Stat cards ───────────────────────────────────────────────────────────────
 
 const statsData = [
-  { label: "Total Flows", value: "135", border: "border-b-violet-500" },
+  { label: "Total Flows", value: "135", border: "border-b-violet-600" },
   { label: "Blocked", value: "120", border: "border-b-amber-400" },
-  { label: "Draft", value: "105", border: "border-b-yellow-400" },
+  { label: "Draft", value: "105", border: "border-b-gray-800" },
   { label: "Published", value: "5", border: "border-b-green-500" },
-  { label: "Deprecated", value: "5", border: "border-b-red-400" },
-  { label: "Throttled", value: "5", border: "border-b-orange-400" },
+  { label: "Deprecated", value: "5", border: "border-b-red-500" },
+  { label: "Throttled", value: "5", border: "border-b-red-500" },
 ];
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
@@ -75,7 +75,7 @@ const StatusBadge = ({ status }: { status: FlowStatus }) => (
 // ─── Small icon button ────────────────────────────────────────────────────────
 
 const IconBtn = ({ icon: Icon }: { icon: React.ElementType }) => (
-  <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+  <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-700 hover:text-slate-700 hover:bg-slate-100 transition-colors">
     <Icon size={14} />
   </button>
 );
@@ -196,8 +196,8 @@ const Flows = () => {
               key={s.label}
               className={`flex-1 min-w-[130px] border-b-4 rounded-b-xl bg-white ${s.border} px-5 py-4 border-r border-slate-100 last:border-r-0`}
             >
-              <p className="text-xs text-slate-400 font-medium">{s.label}</p>
-              <p className="text-2xl font-bold text-slate-800 mt-1">
+              <p className="text-sm text-[#1C1C1C] font-semibold">{s.label}</p>
+              <p className="text-2xl font-normal text-[#1C1C1C] mt-2">
                 {s.value}
               </p>
             </div>
@@ -207,7 +207,7 @@ const Flows = () => {
         {/* ── Create Flow Header ──────────────────────────────────────────────── */}
         <div className="bg-white border border-slate-200 m-4 px-6 py-4 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-bold text-slate-800">Create Flow</h2>
+            <h2 className="text-lg font-bold text-black">Create Flow</h2>
             <p className="text-xs text-slate-400 mt-0.5">
               Create and manage automated conversation flows
             </p>
@@ -216,7 +216,7 @@ const Flows = () => {
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold transition-colors shadow-sm whitespace-nowrap"
             onClick={() => setShowModal(true)}
           >
-            <Plus size={13} />
+            {/* <Plus size={13} /> */}
             Create New Flow
           </button>
         </div>
@@ -231,7 +231,7 @@ const Flows = () => {
               <div className="relative">
                 <Search
                   size={12}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600"
                 />
                 <input
                   type="text"
@@ -293,7 +293,7 @@ const Flows = () => {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-left text-xs font-semibold text-slate-600 whitespace-nowrap"
+                      className="px-4 py-3 text-left text-[13px] font-bold text-black whitespace-nowrap"
                     >
                       {h}
                     </th>
@@ -328,27 +328,27 @@ const Flows = () => {
                           className="rounded border-slate-300 text-violet-600 focus:ring-violet-400 focus:ring-offset-0 cursor-pointer"
                         />
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-slate-700 font-medium">
+                      <td className="px-4 py-3.5 text-[13px] font-medium text-black">
                         {flow.name}
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-slate-600">
+                      <td className="px-4 py-3.5 text-xs text-slate-800">
                         {flow.flowId}
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-slate-600">
+                      <td className="px-4 py-3.5 text-xs text-slate-800">
                         {flow.category}
                       </td>
                       <td className="px-4 py-3.5">
                         <StatusBadge status={flow.status} />
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">
+                      <td className="px-4 py-3.5 text-xs text-slate-800 whitespace-nowrap">
                         {flow.lastEdited}
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1">
-                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-violet-400 hover:text-violet-600 hover:bg-violet-50 transition-colors">
+                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-violet-600 hover:text-violet-600 hover:bg-violet-50 transition-colors">
                             <Pencil size={13} />
                           </button>
-                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-violet-600 hover:text-violet-600 hover:bg-blue-50 transition-colors">
                             <Trash2 size={13} />
                           </button>
                         </div>
