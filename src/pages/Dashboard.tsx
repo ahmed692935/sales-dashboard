@@ -157,7 +157,7 @@ const StatCard = ({ stat }: { stat: LeadStat }) => (
     className={`bg-white rounded-xl border-b-4 ${stat.borderColor} p-4 shadow-sm flex-1 min-w-[130px]`}
   >
     <p className="text-sm text-[#1C1C1C] font-semibold">{stat.label}</p>
-    <div className="flex justify-between">
+    <div className="lg:flex justify-between">
       <p className="text-2xl font-normal text-[#1C1C1C] mt-2 leading-none">
         {stat.value}
       </p>
