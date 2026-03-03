@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import type { LeadStat, TeamMemberRow, TopPerformer } from "../types";
+import Avatar from "../assets/images/avatar.png";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,7 @@ const topPerformers: TopPerformer[] = [
     role: "sales agent",
     wonLeads: 45,
     change: "+18.2%",
+    avatar: Avatar,
   },
   {
     rank: 1,
@@ -110,6 +112,7 @@ const topPerformers: TopPerformer[] = [
     role: "sales agent",
     wonLeads: 45,
     change: "+18.2%",
+    avatar: Avatar,
   },
   {
     rank: 1,
@@ -117,6 +120,7 @@ const topPerformers: TopPerformer[] = [
     role: "sales agent",
     wonLeads: 45,
     change: "+18.2%",
+    avatar: Avatar,
   },
 ];
 
@@ -129,6 +133,7 @@ const teamMembers: TeamMemberRow[] = [
     ticketsResolved: 12,
     ticketsPending: 12,
     wonLeads: "Sargodha",
+    avatar: Avatar,
   },
   {
     id: "2",
@@ -138,6 +143,7 @@ const teamMembers: TeamMemberRow[] = [
     ticketsResolved: 18,
     ticketsPending: 2,
     wonLeads: "Lahore",
+    avatar: Avatar,
   },
   {
     id: "3",
@@ -147,6 +153,7 @@ const teamMembers: TeamMemberRow[] = [
     ticketsResolved: 8,
     ticketsPending: 2,
     wonLeads: "Karachi",
+    avatar: Avatar,
   },
 ];
 
@@ -326,6 +333,11 @@ const TopPerformersPanel = () => (
           <div className="w-7 h-7 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold shrink-0">
             {p.rank}
           </div>
+          <img
+            src={p.avatar}
+            alt={p.name}
+            className="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-100"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-normal text-slate-700 truncate">
               {p.name}
@@ -477,15 +489,27 @@ const Dashboard = () => {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-[13px] font-semibold text-black">
-                      {member.name}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <p className="text-[11px] text-slate-500">
-                        {member.employeeId}
-                      </p>
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-100"
+                      />
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800">
+                          {member.name}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <p className="text-[11px] text-slate-400">
+                            {member.employeeId}
+                          </p>
+                        </div>
+                      </div>
                     </div>
+                    {/* <p className="text-[13px] font-semibold text-black">
+                      {member.name}
+                    </p> */}
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-800">
                     {member.ticketsAssigned}

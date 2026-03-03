@@ -16,6 +16,10 @@ import type { LayoutType, RouteConfig } from "../types";
 import Contacts from "../pages/Contacts";
 import Flows from "../pages/Flows";
 import TeamInbox from "../pages/TeamInbox";
+import Stages from "../pages/Stages";
+import Teams from "../pages/Teams";
+import Roles from "../pages/Roles";
+import Members from "../pages/Members";
 
 const routeConfigs: RouteConfig[] = [
   {
@@ -23,6 +27,30 @@ const routeConfigs: RouteConfig[] = [
     element: <Dashboard />,
     layout: "dashboard",
     label: "Dashboard",
+  },
+  {
+    path: "/lead-stages",
+    element: <Stages />,
+    layout: "dashboard",
+    label: "Lead Stages",
+  },
+  {
+    path: "/teams",
+    element: <Teams />,
+    layout: "dashboard",
+    label: "Teams",
+  },
+  {
+    path: "/permission&roles",
+    element: <Roles />,
+    layout: "dashboard",
+    label: "Permission & Roles",
+  },
+  {
+    path: "/members",
+    element: <Members />,
+    layout: "dashboard",
+    label: "Members",
   },
   {
     path: "/contacts",

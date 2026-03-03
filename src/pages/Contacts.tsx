@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import Avatar from "../assets/images/avatar.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ interface Contact {
   id: string;
   name: string;
   subName: string;
+  avatar: string | undefined;
   email: string;
   phone: string;
   city: string;
@@ -45,6 +47,7 @@ const allContacts: Contact[] = Array.from({ length: 130 }, (_, i) => ({
   stage: (
     ["Verified", "Ongoing", "Verified", "Rejected", "On Hold"] as StageType[]
   )[i % 5],
+  avatar: Avatar,
 }));
 
 const ROWS_PER_PAGE = 8;
@@ -290,12 +293,30 @@ const Contacts = () => {
 
                   {/* Name */}
                   <td className="px-4 py-3.5">
-                    <p className="text-[13px] font-semibold text-black">
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={contact.avatar}
+                        alt={contact.name}
+                        className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-100"
+                      />
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800">
+                          {contact.name}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <p className="text-[11px] text-slate-400">
+                            {contact.subName}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {/* <p className="text-[13px] font-semibold text-black">
                       {contact.name}
                     </p>
                     <p className="text-[11px] text-slate-500 mt-0.5">
                       {contact.subName}
-                    </p>
+                    </p> */}
                   </td>
 
                   {/* Email */}

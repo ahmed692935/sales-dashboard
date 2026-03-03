@@ -14,7 +14,7 @@ export interface SidebarItem {
   path: string;
   icon: ReactNode;
   badge?: number;
-  disabled?: boolean; 
+  disabled?: boolean;
 }
 
 export interface RouteConfig {
@@ -36,6 +36,7 @@ export interface LeadStat {
 export interface TeamMemberRow {
   id: string;
   name: string;
+  avatar: string | undefined;
   employeeId: string;
   ticketsAssigned: number;
   ticketsResolved: number;
@@ -45,6 +46,7 @@ export interface TeamMemberRow {
 
 export interface TopPerformer {
   rank: number;
+  avatar: string | undefined;
   name: string;
   role: string;
   wonLeads: number;

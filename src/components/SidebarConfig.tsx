@@ -34,13 +34,25 @@ const sidebarSections: SidebarSectionConfig[] = [
   // NOTE: "/" removed from match — it caused every route to match this section
   //       Use "/dashboard" as the root of this section instead
   {
-    match: ["/"],
+    match: ["/lead-stages", "/teams", "/permission&roles", "/members"],
     items: [
       {
+        label: "Members",
+        path: "/members",
+        icon: <Users size={16} />,
+        disabled: false,
+      },
+      {
         label: "Sales",
-        path: "/dashboard",
+        path: "/lead-stages",
         icon: <TrendingUp size={16} />,
-        disabled: true,
+        disabled: false,
+      },
+      {
+        label: "Permission & Roles",
+        path: "/permission&roles",
+        icon: <Users size={16} />,
+        disabled: false,
       },
       {
         label: "Marketing",
@@ -58,7 +70,7 @@ const sidebarSections: SidebarSectionConfig[] = [
         label: "Team Members",
         path: "/teams",
         icon: <Layers size={16} />,
-        disabled: true,
+        disabled: false,
       },
       {
         label: "General",
