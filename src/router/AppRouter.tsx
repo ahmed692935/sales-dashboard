@@ -20,6 +20,7 @@ import Stages from "../pages/Stages";
 import Teams from "../pages/Teams";
 import Roles from "../pages/Roles";
 import Members from "../pages/Members";
+import Templates from "../pages/Templates";
 
 const routeConfigs: RouteConfig[] = [
   {
@@ -63,6 +64,12 @@ const routeConfigs: RouteConfig[] = [
     element: <Flows />,
     layout: "dashboard",
     label: "Flows",
+  },
+  {
+    path: "/flows/templates",
+    element: <Templates />,
+    layout: "dashboard",
+    label: "Templates",
   },
   {
     path: "/inbox",

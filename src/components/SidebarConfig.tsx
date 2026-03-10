@@ -25,7 +25,7 @@ const sidebarSections: SidebarSectionConfig[] = [
         label: "Templates",
         path: "/flows/templates",
         icon: <FileText size={16} />,
-        disabled: true,
+        disabled: false,
       },
     ],
   },
