@@ -27,6 +27,25 @@ const sidebarSections: SidebarSectionConfig[] = [
         icon: <FileText size={16} />,
         disabled: false,
       },
+      {
+        label: "Message Templates",
+        path: "/flows/message-templates",
+        icon: <FileText size={16} />,
+        disabled: false,
+      },
+    ],
+  },
+
+  //compaigns
+  {
+    match: ["/campaigns"],
+    items: [
+      {
+        label: "Create Compaigns",
+        path: "/campaigns",
+        icon: <FileText size={16} />,
+        disabled: false,
+      },
     ],
   },
 

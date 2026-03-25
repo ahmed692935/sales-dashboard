@@ -21,6 +21,8 @@ import Teams from "../pages/Teams";
 import Roles from "../pages/Roles";
 import Members from "../pages/Members";
 import Templates from "../pages/Templates";
+import MessageTemplates from "../pages/MessageTemplates";
+import Compaigns from "../pages/Compaigns";
 
 const routeConfigs: RouteConfig[] = [
   {
@@ -60,6 +62,12 @@ const routeConfigs: RouteConfig[] = [
     label: "Contacts",
   },
   {
+    path: "/campaigns",
+    element: <Compaigns />,
+    layout: "dashboard",
+    label: "Compaigns",
+  },
+  {
     path: "/flows",
     element: <Flows />,
     layout: "dashboard",
@@ -70,6 +78,12 @@ const routeConfigs: RouteConfig[] = [
     element: <Templates />,
     layout: "dashboard",
     label: "Templates",
+  },
+  {
+    path: "/flows/message-templates",
+    element: <MessageTemplates />,
+    layout: "dashboard",
+    label: "Message Templates",
   },
   {
     path: "/inbox",

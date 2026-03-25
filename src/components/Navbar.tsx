@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
     label: "Campaigns",
     path: "/campaigns",
     icon: <Megaphone size={16} />,
-    disabled: true,
+    disabled: false,
   },
   {
     label: "Automations",
