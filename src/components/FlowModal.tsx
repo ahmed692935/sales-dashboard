@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, X, MoreVertical, Settings } from "lucide-react";
+import { ChevronDown, X, MoreVertical } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
