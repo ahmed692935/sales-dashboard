@@ -23,6 +23,8 @@ import Members from "../pages/Members";
 import Templates from "../pages/Templates";
 import MessageTemplates from "../pages/MessageTemplates";
 import Compaigns from "../pages/Compaigns";
+import SalesAnalytics from "../pages/SalesAnalytics";
+import Automations from "../pages/Automations";
 
 const routeConfigs: RouteConfig[] = [
   {
@@ -72,6 +74,18 @@ const routeConfigs: RouteConfig[] = [
     element: <Flows />,
     layout: "dashboard",
     label: "Flows",
+  },
+  {
+    path: "/sales-analytics",
+    element: <SalesAnalytics />,
+    layout: "dashboard",
+    label: "Sales Analytics",
+  },
+  {
+    path: "/automations",
+    element: <Automations />,
+    layout: "dashboard",
+    label: "Automations",
   },
   {
     path: "/flows/templates",

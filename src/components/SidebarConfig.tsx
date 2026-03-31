@@ -6,6 +6,9 @@ import {
   Settings,
   LayoutDashboard,
   FileText,
+  PhoneCall,
+  BookOpen,
+  Zap,
 } from "lucide-react";
 import type { SidebarSectionConfig } from "../types";
 
@@ -45,6 +48,51 @@ const sidebarSections: SidebarSectionConfig[] = [
         path: "/campaigns",
         icon: <FileText size={16} />,
         disabled: false,
+      },
+    ],
+  },
+
+  // sales analytics
+  {
+    match: ["/sales-analytics"],
+    items: [
+      {
+        label: "Sales Analytics",
+        path: "/sales-analytics",
+        icon: <PhoneCall size={16} />,
+        disabled: false,
+      },
+    ],
+  },
+
+  {
+    match: ["/automations"],
+    items: [
+      {
+        type: "group",
+        label: "Trigger",
+        icon: <Zap size={16} />,
+        defaultOpen: true,
+        children: [
+          {
+            label: "Rules",
+            path: "/automations/rules",
+            badge: "Recommended",
+            badgeVariant: "recommended",
+          },
+        ],
+      },
+      {
+        type: "group",
+        label: "Actions library",
+        icon: <BookOpen size={16} />,
+        defaultOpen: true,
+        children: [
+          {
+            label: "Routing",
+            path: "/automations/routing",
+          },
+        ],
       },
     ],
   },

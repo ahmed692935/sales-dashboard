@@ -25,15 +25,15 @@ const navItems: NavItem[] = [
     label: "Automations",
     path: "/automations",
     icon: <Zap size={16} />,
-    disabled: true,
+    disabled: false,
   },
   { label: "Flows", path: "/flows", icon: <GitBranch size={16} /> },
   { label: "Contacts", path: "/contacts", icon: <Users size={16} /> },
   {
     label: "Sales Analytics",
-    path: "/dashboard",
+    path: "/sales-analytics",
     icon: <BarChart2 size={16} />,
-    disabled: true,
+    disabled: false,
   },
   {
     label: "Settings",
