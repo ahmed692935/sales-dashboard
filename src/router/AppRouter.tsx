@@ -25,10 +25,24 @@ import MessageTemplates from "../pages/MessageTemplates";
 import Compaigns from "../pages/Compaigns";
 import SalesAnalytics from "../pages/SalesAnalytics";
 import Automations from "../pages/Automations";
+import Login from "../pages/Login";
+import Register from "../pages/Resigter";
 
 const routeConfigs: RouteConfig[] = [
   {
     path: "/",
+    element: <Login />,
+    layout: "simple",
+    label: "Login",
+  },
+  {
+    path: "/register",
+    element: <Register />,
+    layout: "simple",
+    label: "Register",
+  },
+  {
+    path: "/dashboard",
     element: <Dashboard />,
     layout: "dashboard",
     label: "Dashboard",

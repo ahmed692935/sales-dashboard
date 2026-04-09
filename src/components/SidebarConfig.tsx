@@ -101,7 +101,13 @@ const sidebarSections: SidebarSectionConfig[] = [
   // NOTE: "/" removed from match — it caused every route to match this section
   //       Use "/dashboard" as the root of this section instead
   {
-    match: ["/", "/lead-stages", "/teams", "/permission&roles", "/members"],
+    match: [
+      "/dashboard",
+      "/lead-stages",
+      "/teams",
+      "/permission&roles",
+      "/members",
+    ],
     items: [
       {
         label: "Members",

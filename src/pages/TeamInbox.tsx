@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   Search,
@@ -19,95 +19,176 @@ import {
   Circle,
   Info,
   ChevronLeft,
+  Loader2,
+  Wifi,
 } from "lucide-react";
+import {
+  useWhatsappStatus,
+  useConversations,
+  useMessages,
+  useSendMessage,
+  useConnectWhatsapp,
+} from "../hooks/useWhatsapp";
+import type { ConversationWithContact } from "../services/whatsapp.service";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ActivePanel = "list" | "chat" | "detail";
 
-interface Contact {
-  id: string;
-  name: string;
-  phone: string;
-  badge: string;
-  time: string;
-  unread: number;
-}
+// ─── Connect Screen ───────────────────────────────────────────────────────────
 
-interface Message {
-  id: string;
-  text: string;
-  sender: "agent" | "contact";
-  time: string;
-  isSystem?: boolean;
-  isDateDivider?: boolean;
-}
+const ConnectWhatsapp = () => {
+  const { mutate: connect, isPending } = useConnectWhatsapp();
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [sdkReady, setSdkReady] = useState(false);
 
-interface JourneyStep {
-  label: string;
-  description: string;
-  completed: boolean;
-}
+  // Wait for FB SDK to be ready
+  useEffect(() => {
+    const check = setInterval(() => {
+      if ((window as any).FB) {
+        setSdkReady(true);
+        clearInterval(check);
+      }
+    }, 200);
+    return () => clearInterval(check);
+  }, []);
 
-// ─── Mock Data ─────────────────────────────────────────────────────────────────
+  // Listen for postMessage from Meta — gives wabaId + phoneNumberId
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (
+        !["https://www.facebook.com", "https://web.facebook.com"].includes(
+          e.origin,
+        )
+      )
+        return;
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === "WA_EMBEDDED_SIGNUP") {
+          if (msg.event === "FINISH" && msg.data) {
+            // Store for use in FB.login callback
+            (window as any).__waData = {
+              wabaId: msg.data.waba_id,
+              phoneNumberId: msg.data.phone_number_id,
+            };
+          } else if (msg.event === "CANCEL") {
+            setStatusMsg("Connection was cancelled.");
+          } else if (msg.event === "ERROR") {
+            setStatusMsg(
+              `Error: ${msg.data?.error_message ?? "Please try again."}`,
+            );
+          }
+        }
+      } catch {
+        /* ignore non-JSON */
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
 
-const contacts: Contact[] = Array.from({ length: 12 }, (_, i) => ({
-  id: String(i + 1),
-  name: "Person 1",
-  phone: "+92 300 1234567",
-  badge: "application submitted",
-  time: "6:15 pm",
-  unread: 1,
-}));
+  const handleConnect = () => {
+    setStatusMsg(null);
+    const FB = (window as any).FB;
 
-const initialMessages: Message[] = [
-  {
-    id: "sys1",
-    text: "The ticket status has been set as solved by Member 2:55:29 AM",
-    sender: "agent",
-    time: "",
-    isSystem: true,
-  },
-  {
-    id: "1",
-    text: "Box office: 36,870\nNumber of incoming: 2,346\nConversion: 89%\nSales 67\nThe number of checks is 56",
-    sender: "contact",
-    time: "Friday 4:55pm",
-  },
-  {
-    id: "2",
-    text: "I promise that by the evening there will be better results, we are fulfilling the plan!!!",
-    sender: "contact",
-    time: "Friday 6:15pm",
-  },
-  {
-    id: "3",
-    text: "Sure thing, I'll have a look today.",
-    sender: "agent",
-    time: "Friday 8:20pm",
-  },
-  {
-    id: "divider",
-    text: "Today",
-    sender: "contact",
-    time: "",
-    isDateDivider: true,
-  },
-  {
-    id: "4",
-    text: "I promise that by the evening there will be better results, we are fulfilling the plan!!!",
-    sender: "contact",
-    time: "Friday 6:15pm",
-  },
-];
+    if (!FB) {
+      setStatusMsg("Facebook SDK not loaded. Please refresh.");
+      return;
+    }
 
-const journeySteps: JourneyStep[] = [
-  { label: "Step Name", description: "Step Description", completed: true },
-  { label: "Step Name", description: "Step Description", completed: false },
-];
+    FB.login(
+      (response: any) => {
+        if (response.authResponse?.code) {
+          const code = response.authResponse.code;
+          const waData = (window as any).__waData;
 
-const tags = ["Tag 1", "Tag 2"];
-const customFields = ["Tag 1", "Tag 2"];
+          if (!waData?.wabaId || !waData?.phoneNumberId) {
+            setStatusMsg(
+              "Could not get WhatsApp account details. Please try again.",
+            );
+            return;
+          }
+
+          connect(
+            {
+              code,
+              wabaId: waData.wabaId,
+              phoneNumberId: waData.phoneNumberId,
+            },
+            {
+              onSuccess: () => {
+                delete (window as any).__waData;
+              },
+              onError: () =>
+                setStatusMsg("Failed to connect. Please try again."),
+            },
+          );
+        } else {
+          setStatusMsg("Login was cancelled or failed.");
+        }
+      },
+      {
+        config_id: import.meta.env.VITE_META_CONFIG_ID,
+        response_type: "code",
+        override_default_response_type: true,
+        extras: { sessionInfoVersion: 3 },
+      },
+    );
+  };
+
+  return (
+    <div className="flex flex-1 items-center justify-center bg-slate-50 p-8">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 flex flex-col items-center text-center max-w-sm w-full gap-5">
+        <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center">
+          <svg viewBox="0 0 24 24" className="w-9 h-9 fill-green-500">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+            <path d="M11.993 2C6.476 2 2 6.477 2 12.001c0 1.762.457 3.413 1.257 4.845L2 22l5.293-1.217A9.97 9.97 0 0011.993 22C17.516 22 22 17.522 22 12s-4.484-10-10.007-10zm0 18.214a8.188 8.188 0 01-4.181-1.14l-.299-.178-3.1.712.756-2.99-.195-.307A8.175 8.175 0 013.818 12c0-4.517 3.677-8.193 8.175-8.193S20.168 7.483 20.168 12c0 4.52-3.677 8.214-8.175 8.214z" />
+          </svg>
+        </div>
+
+        <div>
+          <h2 className="text-base font-semibold text-slate-800">
+            Connect WhatsApp
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Connect your WhatsApp Business account to start sending and
+            receiving messages.
+          </p>
+        </div>
+
+        {statusMsg && (
+          <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg w-full">
+            {statusMsg}
+          </p>
+        )}
+
+        {!sdkReady && (
+          <p className="text-xs text-slate-400 flex items-center gap-1.5">
+            <Loader2 size={12} className="animate-spin" /> Loading SDK...
+          </p>
+        )}
+
+        <button
+          onClick={handleConnect}
+          disabled={isPending || !sdkReady}
+          className="btn-primary w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {isPending ? (
+            <>
+              <Loader2 size={15} className="animate-spin" /> Connecting...
+            </>
+          ) : (
+            "Connect WhatsApp"
+          )}
+        </button>
+
+        <p className="text-xs text-slate-400">
+          A popup will open to authorize the connection with Meta.
+        </p>
+      </div>
+    </div>
+  );
+};
 
 // ─── Left Panel — Contact List ────────────────────────────────────────────────
 
@@ -115,19 +196,28 @@ const ContactList = ({
   activeId,
   onSelect,
   onClose,
+  isConnected,
 }: {
   activeId: string;
   onSelect: (id: string) => void;
   onClose?: () => void;
+  isConnected: boolean;
 }) => {
   const [activeTab, setActiveTab] = useState<"Newest" | "Lead" | "Application">(
     "Newest",
   );
   const tabs = ["Newest", "Lead", "Application Submitt..."] as const;
+  const [search, setSearch] = useState("");
+
+  const { data: conversations = [], isLoading } = useConversations(isConnected);
+
+  const filtered = conversations.filter((c) => {
+    const name = c.contact?.name ?? c.contact?.phone ?? "";
+    return name.toLowerCase().includes(search.toLowerCase());
+  });
 
   return (
     <aside className="flex flex-col bg-white h-full border-r border-slate-200 w-full md:w-60 lg:w-68 xl:70 shrink-0">
-      {/* Close */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
         <button
           onClick={onClose}
@@ -138,28 +228,26 @@ const ContactList = ({
         </button>
       </div>
 
-      {/* Search */}
       <div className="px-3 py-2.5 border-b border-slate-100">
         <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
           <Search size={13} className="text-slate-600 shrink-0" />
           <input
             type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search chat"
             className="flex-1 bg-transparent text-xs text-slate-700 placeholder-slate-400 focus:outline-none min-w-0"
           />
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex items-center px-2 py-1.5 border-b border-slate-100 gap-1 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() =>
               setActiveTab(
-                tab === "Application Submitt..."
-                  ? "Application"
-                  : (tab as "Newest" | "Lead"),
+                tab === "Application Submitt..." ? "Application" : (tab as any),
               )
             }
             className={`text-[11px] font-medium px-1.5 py-1 rounded transition-colors whitespace-nowrap shrink-0 ${
@@ -178,42 +266,68 @@ const ContactList = ({
         </button>
       </div>
 
-      {/* Contact Items */}
       <div className="flex-1 overflow-y-auto">
-        {contacts.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => onSelect(c.id)}
-            className={`w-full flex items-start gap-2.5 px-3 py-2.5 border-b border-slate-50 text-left transition-colors ${
-              activeId === c.id ? "bg-slate-50" : "hover:bg-slate-50"
-            }`}
-          >
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
-              D
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-[12px] font-semibold text-slate-800 truncate">
-                  {c.name}
-                </span>
-                <span className="text-[10px] text-slate-400 shrink-0">
-                  {c.time}
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                {c.phone}
-              </p>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-[9px] bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-medium truncate max-w-[100px]">
-                  {c.badge}
-                </span>
-                <span className="w-4 h-4 rounded-full bg-violet-600 text-white text-[9px] font-bold flex items-center justify-center shrink-0">
-                  {c.unread}
-                </span>
-              </div>
-            </div>
-          </button>
-        ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-10 text-slate-400 gap-2">
+            <Loader2 size={15} className="animate-spin" />
+            <span className="text-xs">Loading...</span>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 gap-2">
+            <MessageSquare size={22} className="text-slate-300" />
+            <p className="text-xs text-slate-400">No conversations yet</p>
+          </div>
+        ) : (
+          filtered.map((c) => {
+            const name = c.contact?.name ?? c.contact?.phone ?? "Unknown";
+            const phone = c.contact?.phone ?? "";
+            const initial = name.charAt(0).toUpperCase();
+            return (
+              <button
+                key={c.conversation.id}
+                onClick={() => onSelect(c.conversation.id)}
+                className={`w-full flex items-start gap-2.5 px-3 py-2.5 border-b border-slate-50 text-left transition-colors ${
+                  activeId === c.conversation.id
+                    ? "bg-slate-50"
+                    : "hover:bg-slate-50"
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+                  {initial}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[12px] font-semibold text-slate-800 truncate">
+                      {name}
+                    </span>
+                    <span className="text-[10px] text-slate-400 shrink-0">
+                      {new Date(
+                        c.conversation.lastMessageAt,
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                    {phone}
+                  </p>
+                  <div className="flex items-center justify-between mt-1">
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                        c.conversation.status === "open"
+                          ? "bg-teal-500 text-white"
+                          : "bg-slate-200 text-slate-500"
+                      }`}
+                    >
+                      {c.conversation.status}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            );
+          })
+        )}
       </div>
     </aside>
   );
@@ -222,40 +336,53 @@ const ContactList = ({
 // ─── Center Panel — Chat View ─────────────────────────────────────────────────
 
 const ChatView = ({
+  conversationId,
+  contact,
   onBack,
   onShowDetail,
 }: {
+  conversationId: string | null;
+  contact: ConversationWithContact | null;
   onBack?: () => void;
   onShowDetail?: () => void;
 }) => {
   const [messageText, setMessageText] = useState("");
-  const [chatMessages, setChatMessages] = useState<Message[]>(initialMessages);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const { data: messages = [], isLoading } = useMessages(conversationId);
+  const { mutate: sendMessage, isPending: isSending } =
+    useSendMessage(conversationId);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = () => {
-    if (!messageText.trim()) return;
-    setChatMessages((prev) => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        text: messageText,
-        sender: "agent",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    ]);
-    setMessageText("");
+    if (!messageText.trim() || !conversationId) return;
+    sendMessage(messageText, { onSuccess: () => setMessageText("") });
   };
 
+  const contactName =
+    contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
+  const contactPhone = contact?.contact?.phone ?? "";
+
+  if (!conversationId) {
+    return (
+      <main className="flex-1 flex items-center justify-center bg-gray-50 border-4 border-gray-100">
+        <div className="text-center">
+          <MessageSquare size={36} className="text-slate-300 mx-auto mb-3" />
+          <p className="text-sm text-slate-400">Select a conversation</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="flex-1 flex flex-col border- border-gray-100 border-4 overflow-hidden bg-white min-w-0">
+    <main className="flex-1 flex flex-col border-4 border-gray-100 overflow-hidden bg-white min-w-0">
       {/* Chat Header */}
       <div className="px-4 py-3 border-b border-slate-200 shrink-0">
         <div className="flex items-start justify-between gap-2">
-          {/* Left */}
           <div className="flex items-start gap-2 min-w-0">
-            {/* Back button — mobile only */}
             {onBack && (
               <button
                 onClick={onBack}
@@ -267,7 +394,7 @@ const ChatView = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-sm font-bold text-slate-800 whitespace-nowrap">
-                  Nataly Chaplack
+                  {contactName}
                 </h2>
                 <span className="text-xs text-slate-400 hidden sm:inline">
                   Assignee
@@ -276,16 +403,13 @@ const ChatView = ({
                   John Doe
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">+92 300 1234567</p>
+              <p className="text-xs text-slate-500 mt-0.5">{contactPhone}</p>
               <span className="inline-block mt-1 text-[10px] bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">
-                lead stages
+                whatsapp
               </span>
             </div>
           </div>
-
-          {/* Right — dropdowns + detail toggle */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* Dropdowns hidden on small, shown md+ */}
             <div className="hidden md:flex items-center gap-1.5">
               {["Select Stage", "Assign to", "Open"].map((label) => (
                 <button
@@ -296,19 +420,16 @@ const ChatView = ({
                 </button>
               ))}
             </div>
-            {/* Info icon — opens detail on mobile/tablet */}
             {onShowDetail && (
               <button
                 onClick={onShowDetail}
-                className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-800 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-800 hover:bg-slate-100 transition-colors"
               >
                 <Info size={16} />
               </button>
             )}
           </div>
         </div>
-
-        {/* Dropdowns row for small screens */}
         <div className="flex md:hidden items-center gap-1.5 mt-2 overflow-x-auto">
           {["Select Stage", "Assign to", "Open"].map((label) => (
             <button
@@ -321,61 +442,57 @@ const ChatView = ({
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-gray-100 flex flex-col gap-4">
-        {chatMessages.map((msg) => {
-          if (msg.isSystem) {
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full gap-2 text-slate-400">
+            <Loader2 size={16} className="animate-spin" />
+            <span className="text-sm">Loading messages...</span>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-sm text-slate-400">
+              No messages yet. Say hello!
+            </p>
+          </div>
+        ) : (
+          messages.map((msg) => {
+            const isAgent = msg.direction === "outbound";
             return (
-              <div key={msg.id} className="flex justify-center">
-                <span className="text-[11px] text-violet-500 bg-violet-50 px-4 py-1.5 rounded-full text-center">
-                  {msg.text}
-                </span>
-              </div>
-            );
-          }
-          if (msg.isDateDivider) {
-            return (
-              <div key={msg.id} className="flex justify-center">
-                <span className="text-[11px] text-slate-400 border border-slate-200 bg-white px-4 py-1 rounded-full">
-                  {msg.text}
-                </span>
-              </div>
-            );
-          }
-
-          const isAgent = msg.sender === "agent";
-          return (
-            <div
-              key={msg.id}
-              className={`flex flex-col ${isAgent ? "items-end" : "items-start"}`}
-            >
               <div
-                className={`max-w-[85%] sm:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
-                  isAgent
-                    ? "bg-violet-600 text-white rounded-br-sm"
-                    : "bg-white text-slate-700 rounded-bl-sm"
-                }`}
+                key={msg.id}
+                className={`flex flex-col ${isAgent ? "items-end" : "items-start"}`}
               >
-                {msg.text}
-              </div>
-              {msg.time && (
+                <div
+                  className={`max-w-[85%] sm:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
+                    isAgent
+                      ? "bg-violet-600 text-white rounded-br-sm"
+                      : "bg-white text-slate-700 rounded-bl-sm"
+                  }`}
+                >
+                  {msg.body}
+                </div>
                 <span className="text-[10px] text-slate-400 mt-1 px-1">
-                  {msg.time}
+                  {new Date(msg.sentAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })
+        )}
+        <div ref={bottomRef} />
       </div>
 
-      {/* Message Input */}
+      {/* Input */}
       <div className="border-t border-slate-200 bg-white shrink-0">
         <div className="px-4 pt-3 pb-2">
           <input
             type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             placeholder="Type a message"
             className="w-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none bg-transparent"
           />
@@ -397,9 +514,17 @@ const ChatView = ({
           </div>
           <button
             onClick={handleSend}
-            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors"
+            disabled={isSending || !messageText.trim()}
+            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
           >
-            Send <Send size={13} />
+            {isSending ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <>
+                <Send size={13} />
+              </>
+            )}
+            Send
           </button>
         </div>
       </div>
@@ -409,31 +534,39 @@ const ChatView = ({
 
 // ─── Right Panel — Detail ─────────────────────────────────────────────────────
 
-const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
+const DetailPanel = ({
+  contact,
+  onBack,
+}: {
+  contact: ConversationWithContact | null;
+  onBack?: () => void;
+}) => {
   const [note, setNote] = useState("");
 
+  const tags = ["Tag 1", "Tag 2"];
+  const customFields = ["Tag 1", "Tag 2"];
+
+  const journeySteps = [
+    { label: "Step Name", description: "Step Description", completed: true },
+    { label: "Step Name", description: "Step Description", completed: false },
+  ];
+
+  const name = contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
+  const phone = contact?.contact?.phone ?? "—";
+
   const detailRows = [
+    { icon: <MessageSquare size={13} />, label: "Channel", value: "WhatsApp" },
     {
-      icon: <MessageSquare size={13} />,
-      label: "Channel",
-      value: "WhatsAppB2B",
+      icon: <Hash size={13} />,
+      label: "ID",
+      value: contact?.conversation.id.slice(0, 13) ?? "—",
     },
-    { icon: <Hash size={13} />, label: "ID", value: "2023113142356" },
-    {
-      icon: <Phone size={13} />,
-      label: "Phone num..",
-      value: "+92 300 1234567",
-    },
-    {
-      icon: <MapPin size={13} />,
-      label: "Address",
-      value: "house no 1 street , colony, Landmark, City ........",
-    },
+    { icon: <Phone size={13} />, label: "Phone num..", value: phone },
+    { icon: <MapPin size={13} />, label: "Address", value: "—" },
   ];
 
   return (
     <aside className="bg-white border-l border-4 border-gray-100 flex flex-col overflow-y-auto w-full lg:w-68 xl:w-70 shrink-0 h-full">
-      {/* Mobile back bar */}
       {onBack && (
         <div className="lg:hidden flex items-center gap-2 px-4 py-3 border-b border-slate-100">
           <button
@@ -446,30 +579,25 @@ const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
         </div>
       )}
 
-      {/* Person Header */}
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100">
         <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-          P
+          {name.charAt(0).toUpperCase()}
         </div>
         <span className="flex-1 text-sm font-semibold text-slate-800">
-          Person 1
+          {name}
         </span>
         <button className="flex items-center gap-1 text-[12px] text-black hover:text-slate-700">
           <Pencil size={11} /> Edit
         </button>
       </div>
 
-      {/* Detail Rows */}
       <div className="px-4 py-4 rounded-md">
         {detailRows.map((row) => (
           <div key={row.label} className="flex py-2">
-            {/* Left Side (Icon + Label) */}
             <div className="flex items-center gap-2 w-28 shrink-0">
               <span className="text-slate-700">{row.icon}</span>
               <span className="text-xs text-black">{row.label}</span>
             </div>
-
-            {/* Right Side (Value) */}
             <div className="flex-1 min-w-0 text-xs text-black break-words">
               {row.value}
             </div>
@@ -477,14 +605,12 @@ const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
         ))}
       </div>
 
-      {/* Add Attribute */}
       <div className="px-4 py-2.5 border-b border-slate-100">
         <button className="flex items-center gap-1.5 text-[11px] text-black hover:text-slate-600">
           <Plus size={13} /> Add new attribute
         </button>
       </div>
 
-      {/* Tags */}
       <div className="px-4 py-3 border-b border-slate-100">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[12px] font-semibold text-black">Tags</span>
@@ -496,7 +622,7 @@ const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
           {tags.map((t) => (
             <span
               key={t}
-              className="text-[11px] bg-transparent border border-gray-300 text-slate-600 px-4  py-0.5 rounded-lg font-medium"
+              className="text-[11px] bg-transparent border border-gray-300 text-slate-600 px-4 py-0.5 rounded-lg font-medium"
             >
               {t}
             </span>
@@ -505,7 +631,6 @@ const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
         <p className="text-[10px] text-slate-600">No tags Added</p>
       </div>
 
-      {/* Custom User Fields */}
       <div className="px-4 py-3 border-b border-slate-100">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[12px] font-semibold text-black">
@@ -528,7 +653,6 @@ const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
         <p className="text-[10px] text-slate-600">No custom field added</p>
       </div>
 
-      {/* Notes */}
       <div className="px-4 py-3 border-b border-slate-100">
         <span className="text-[13px] font-semibold text-black block mb-2">
           Notes
@@ -541,16 +665,15 @@ const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
           className="w-full text-[11px] text-slate-700 placeholder-slate-400 focus:outline-none resize-none bg-gray-100 p-2 rounded-lg"
         />
         <div className="flex items-center gap-2 mt-1">
-          <button className="text-slate-500 hover:text-slate-500">
+          <button className="text-slate-500">
             <Paperclip size={13} />
           </button>
-          <button className="text-slate-500 hover:text-slate-500">
+          <button className="text-slate-500">
             <SmilePlus size={13} />
           </button>
         </div>
       </div>
 
-      {/* Client Journey */}
       <div className="px-4 py-3">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[12px] font-semibold text-black">
@@ -600,46 +723,82 @@ const DetailPanel = ({ onBack }: { onBack?: () => void }) => {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const TeamInbox = () => {
-  const [activeContactId, setActiveContactId] = useState("1");
-  // Mobile panel navigation: "list" → "chat" → "detail"
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
   const [activePanel, setActivePanel] = useState<ActivePanel>("list");
 
+  const { data: statusData, isLoading: statusLoading } = useWhatsappStatus();
+  const { data: conversations = [] } = useConversations(
+    !!statusData?.connected,
+  );
+
+  const isConnected = statusData?.connected ?? false;
+  const activeConversation =
+    conversations.find((c) => c.conversation.id === activeConversationId) ??
+    null;
+
   const handleSelectContact = (id: string) => {
-    setActiveContactId(id);
+    setActiveConversationId(id);
     setActivePanel("chat");
   };
 
+  if (statusLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-2 text-slate-400">
+          <Loader2 size={18} className="animate-spin" />
+          <span className="text-sm">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isConnected) {
+    return <ConnectWhatsapp />;
+  }
+
   return (
     <div className="flex flex-1 overflow-hidden w-full h-full">
-      {/* ── Mobile: show one panel at a time ─────────────────────────────── */}
+      {/* ── Mobile ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-1 lg:hidden overflow-hidden">
         {activePanel === "list" && (
           <ContactList
-            activeId={activeContactId}
+            activeId={activeConversationId ?? ""}
             onSelect={handleSelectContact}
-            onClose={() => {}} // no-op on mobile
+            onClose={() => {}}
+            isConnected={isConnected}
           />
         )}
         {activePanel === "chat" && (
           <ChatView
+            conversationId={activeConversationId}
+            contact={activeConversation}
             onBack={() => setActivePanel("list")}
             onShowDetail={() => setActivePanel("detail")}
           />
         )}
         {activePanel === "detail" && (
-          <DetailPanel onBack={() => setActivePanel("chat")} />
+          <DetailPanel
+            contact={activeConversation}
+            onBack={() => setActivePanel("chat")}
+          />
         )}
       </div>
 
-      {/* ── Desktop: all 3 panels side by side ────────────────────────────── */}
+      {/* ── Desktop ─────────────────────────────────────────────────────────── */}
       <div className="hidden lg:flex flex-1 overflow-hidden">
         <ContactList
-          activeId={activeContactId}
-          onSelect={(id) => setActiveContactId(id)}
+          activeId={activeConversationId ?? ""}
+          onSelect={handleSelectContact}
           onClose={() => {}}
+          isConnected={isConnected}
         />
-        <ChatView />
-        <DetailPanel />
+        <ChatView
+          conversationId={activeConversationId}
+          contact={activeConversation}
+        />
+        <DetailPanel contact={activeConversation} />
       </div>
     </div>
   );
