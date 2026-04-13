@@ -20,7 +20,6 @@ import {
   Info,
   ChevronLeft,
   Loader2,
-  Wifi,
 } from "lucide-react";
 import {
   useWhatsappStatus,
@@ -598,7 +597,7 @@ const DetailPanel = ({
               <span className="text-slate-700">{row.icon}</span>
               <span className="text-xs text-black">{row.label}</span>
             </div>
-            <div className="flex-1 min-w-0 text-xs text-black break-words">
+            <div className="flex-1 min-w-0 text-xs text-black wrap-break-words">
               {row.value}
             </div>
           </div>

@@ -17,23 +17,6 @@ import {
 } from "lucide-react";
 import { useContacts } from "../hooks/useWhatsapp";
 
-type StageType = "Verified" | "Ongoing" | "Rejected" | "On Hold";
-
-const stageBadgeStyle: Record<StageType, string> = {
-  Verified: "bg-violet-100 text-violet-700",
-  Ongoing: "bg-blue-100 text-blue-600",
-  Rejected: "bg-rose-100 text-rose-600",
-  "On Hold": "bg-orange-100 text-orange-600",
-};
-
-const StageBadge = ({ stage }: { stage: StageType }) => (
-  <span
-    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${stageBadgeStyle[stage]}`}
-  >
-    {stage}
-  </span>
-);
-
 const IconBtn = ({ icon: Icon }: { icon: React.ElementType }) => (
   <button className="w-8 h-8 flex items-center justify-center rounded-md text-gray-700 hover:text-slate-700 hover:bg-slate-100 transition-colors">
     <Icon size={15} />
