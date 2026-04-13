@@ -142,54 +142,59 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }: NavbarProps) => {
           )}
         </nav>
 
-        {/* User Menu */}
-        <div className="relative ml-auto">
-          <button
-            onClick={() => setUserMenuOpen((v) => !v)}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-          >
-            {/* Avatar */}
-            <div className="w-7 h-7 rounded-full bg-[#7364FF] flex items-center justify-center text-white text-xs font-semibold shrink-0">
-              {initials}
-            </div>
-            {/* Name + role — desktop only */}
-            <div className="hidden lg:flex flex-col items-start leading-tight">
-              <span className="text-sm font-medium text-slate-800">
-                {user?.name}
-              </span>
-              <span className="text-xs text-slate-400 capitalize">
-                {user?.role}
-              </span>
-            </div>
-            <ChevronDown size={14} className="text-slate-400 hidden lg:block" />
-          </button>
-
-          {/* Dropdown */}
-          {userMenuOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
-              {/* User info */}
-              <div className="px-4 py-3 border-b border-slate-100">
-                <p className="text-sm font-semibold text-slate-800">
-                  {user?.name}
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5 truncate">
-                  {user?.email}
-                </p>
-                <span className="inline-flex items-center mt-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 capitalize">
-                  {user?.role}
+        {/* User Menu — only rendered when logged in */}
+        {user && (
+          <div className="relative ml-auto">
+            <button
+              onClick={() => setUserMenuOpen((v) => !v)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              {/* Avatar */}
+              <div className="w-7 h-7 rounded-full bg-[#7364FF] flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                {initials}
+              </div>
+              {/* Name + role — desktop only */}
+              <div className="hidden lg:flex flex-col items-start leading-tight">
+                <span className="text-sm font-medium text-slate-800">
+                  {user.name}
+                </span>
+                <span className="text-xs text-slate-400 capitalize">
+                  {user.role}
                 </span>
               </div>
-              {/* Logout */}
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <LogOut size={14} />
-                Sign out
-              </button>
-            </div>
-          )}
-        </div>
+              <ChevronDown
+                size={14}
+                className="text-slate-400 hidden lg:block"
+              />
+            </button>
+
+            {/* Dropdown */}
+            {userMenuOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+                {/* User info */}
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <p className="text-sm font-semibold text-slate-800">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5 truncate">
+                    {user.email}
+                  </p>
+                  <span className="inline-flex items-center mt-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 capitalize">
+                    {user.role}
+                  </span>
+                </div>
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut size={14} />
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Mobile menu toggle */}
         <button
@@ -234,27 +239,28 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }: NavbarProps) => {
             ),
           )}
 
-          {/* Mobile user info + logout */}
-          <div className="border-t border-slate-100 mt-1 pt-2">
-            <div className="flex items-center gap-3 px-3 py-2">
-              <div className="w-8 h-8 rounded-full bg-[#7364FF] flex items-center justify-center text-white text-xs font-semibold shrink-0">
-                {initials}
+          {user && (
+            <div className="border-t border-slate-100 mt-1 pt-2">
+              <div className="flex items-center gap-3 px-3 py-2">
+                <div className="w-8 h-8 rounded-full bg-[#7364FF] flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                  {initials}
+                </div>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-sm font-medium text-slate-800">
+                    {user.name}
+                  </span>
+                  <span className="text-xs text-slate-400">{user.email}</span>
+                </div>
               </div>
-              <div className="flex flex-col leading-tight">
-                <span className="text-sm font-medium text-slate-800">
-                  {user?.name}
-                </span>
-                <span className="text-xs text-slate-400">{user?.email}</span>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <LogOut size={14} />
+                Sign out
+              </button>
             </div>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
-            >
-              <LogOut size={14} />
-              Sign out
-            </button>
-          </div>
+          )}
         </div>
       )}
     </header>
