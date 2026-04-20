@@ -114,6 +114,19 @@ const whatsappService = {
     const { data } = await api.get("/whatsapp/contacts", { params });
     return { data: data.data, pagination: data.pagination };
   },
+
+  initiateConversation: async (
+    phone: string,
+    body: string,
+    templateName?: string,
+  ) => {
+    const { data } = await api.post("/whatsapp/conversations/initiate", {
+      phone,
+      body,
+      templateName,
+    });
+    return data.data;
+  },
 };
 
 export default whatsappService;

@@ -75,3 +75,25 @@ export const useContacts = (params: ContactsParams = {}) =>
     queryFn: () => whatsappService.getContacts(params),
     placeholderData: (prev) => prev,
   });
+
+export const useInitiateConversation = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      phone,
+      body,
+      templateName,
+    }: {
+      phone: string;
+      body: string;
+      templateName?: string;
+    }) => whatsappService.initiateConversation(phone, body, templateName),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["whatsapp-conversations"] });
+      toast.success("Message sent!");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error ?? "Failed to send message");
+    },
+  });
+};

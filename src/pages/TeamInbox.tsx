@@ -29,6 +29,7 @@ import {
   useConnectWhatsapp,
 } from "../hooks/useWhatsapp";
 import type { ConversationWithContact } from "../services/whatsapp.service";
+import { NewConversationModal } from "../components/Inbox/NewConversationsModal/NewConversationsModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -207,6 +208,7 @@ const ContactList = ({
   );
   const tabs = ["Newest", "Lead", "Application Submitt..."] as const;
   const [search, setSearch] = useState("");
+  const [showNew, setShowNew] = useState(false);
 
   const { data: conversations = [], isLoading } = useConversations(isConnected);
 
@@ -217,13 +219,19 @@ const ContactList = ({
 
   return (
     <aside className="flex flex-col bg-white h-full border-r border-slate-200 w-full md:w-60 lg:w-68 xl:70 shrink-0">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 transition-colors"
+          className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700"
         >
           <ArrowLeft size={15} />
           <span className="text-sm font-medium">Close</span>
+        </button>
+        <button
+          onClick={() => setShowNew(true)}
+          className="w-7 h-7 flex items-center justify-center rounded-lg bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+        >
+          <Plus size={14} />
         </button>
       </div>
 
@@ -328,6 +336,15 @@ const ContactList = ({
           })
         )}
       </div>
+      {showNew && (
+        <NewConversationModal
+          onClose={() => setShowNew(false)}
+          onSuccess={(id) => {
+            onSelect(id);
+            setShowNew(false);
+          }}
+        />
+      )}
     </aside>
   );
 };
