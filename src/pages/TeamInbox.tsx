@@ -1,14 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Search,
   SlidersHorizontal,
-  ChevronDown,
   Paperclip,
   SmilePlus,
-  SquarePen,
-  Type,
-  Send,
   Plus,
   Pencil,
   MessageSquare,
@@ -17,32 +13,25 @@ import {
   MapPin,
   Check,
   Circle,
-  Info,
   ChevronLeft,
   Loader2,
 } from "lucide-react";
 import {
   useWhatsappStatus,
   useConversations,
-  useMessages,
-  useSendMessage,
   useConnectWhatsapp,
 } from "../hooks/useWhatsapp";
 import type { ConversationWithContact } from "../services/whatsapp.service";
 import { NewConversationModal } from "../components/Inbox/NewConversationsModal/NewConversationsModal";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { ChatView } from "../components/Inbox/ChatView/ChatView";
 
 type ActivePanel = "list" | "chat" | "detail";
-
-// ─── Connect Screen ───────────────────────────────────────────────────────────
 
 const ConnectWhatsapp = () => {
   const { mutate: connect, isPending } = useConnectWhatsapp();
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [sdkReady, setSdkReady] = useState(false);
 
-  // Wait for FB SDK to be ready
   useEffect(() => {
     const check = setInterval(() => {
       if ((window as any).FB) {
@@ -53,7 +42,6 @@ const ConnectWhatsapp = () => {
     return () => clearInterval(check);
   }, []);
 
-  // Listen for postMessage from Meta — gives wabaId + phoneNumberId
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (
@@ -66,7 +54,6 @@ const ConnectWhatsapp = () => {
         const msg = JSON.parse(e.data);
         if (msg.type === "WA_EMBEDDED_SIGNUP") {
           if (msg.event === "FINISH" && msg.data) {
-            // Store for use in FB.login callback
             (window as any).__waData = {
               wabaId: msg.data.waba_id,
               phoneNumberId: msg.data.phone_number_id,
@@ -90,25 +77,21 @@ const ConnectWhatsapp = () => {
   const handleConnect = () => {
     setStatusMsg(null);
     const FB = (window as any).FB;
-
     if (!FB) {
       setStatusMsg("Facebook SDK not loaded. Please refresh.");
       return;
     }
-
     FB.login(
       (response: any) => {
         if (response.authResponse?.code) {
           const code = response.authResponse.code;
           const waData = (window as any).__waData;
-
           if (!waData?.wabaId || !waData?.phoneNumberId) {
             setStatusMsg(
               "Could not get WhatsApp account details. Please try again.",
             );
             return;
           }
-
           connect(
             {
               code,
@@ -145,7 +128,6 @@ const ConnectWhatsapp = () => {
             <path d="M11.993 2C6.476 2 2 6.477 2 12.001c0 1.762.457 3.413 1.257 4.845L2 22l5.293-1.217A9.97 9.97 0 0011.993 22C17.516 22 22 17.522 22 12s-4.484-10-10.007-10zm0 18.214a8.188 8.188 0 01-4.181-1.14l-.299-.178-3.1.712.756-2.99-.195-.307A8.175 8.175 0 013.818 12c0-4.517 3.677-8.193 8.175-8.193S20.168 7.483 20.168 12c0 4.52-3.677 8.214-8.175 8.214z" />
           </svg>
         </div>
-
         <div>
           <h2 className="text-base font-semibold text-slate-800">
             Connect WhatsApp
@@ -155,19 +137,16 @@ const ConnectWhatsapp = () => {
             receiving messages.
           </p>
         </div>
-
         {statusMsg && (
           <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg w-full">
             {statusMsg}
           </p>
         )}
-
         {!sdkReady && (
           <p className="text-xs text-slate-400 flex items-center gap-1.5">
             <Loader2 size={12} className="animate-spin" /> Loading SDK...
           </p>
         )}
-
         <button
           onClick={handleConnect}
           disabled={isPending || !sdkReady}
@@ -181,7 +160,6 @@ const ConnectWhatsapp = () => {
             "Connect WhatsApp"
           )}
         </button>
-
         <p className="text-xs text-slate-400">
           A popup will open to authorize the connection with Meta.
         </p>
@@ -189,8 +167,6 @@ const ConnectWhatsapp = () => {
     </div>
   );
 };
-
-// ─── Left Panel — Contact List ────────────────────────────────────────────────
 
 const ContactList = ({
   activeId,
@@ -336,6 +312,7 @@ const ContactList = ({
           })
         )}
       </div>
+
       {showNew && (
         <NewConversationModal
           onClose={() => setShowNew(false)}
@@ -348,207 +325,6 @@ const ContactList = ({
     </aside>
   );
 };
-
-// ─── Center Panel — Chat View ─────────────────────────────────────────────────
-
-const ChatView = ({
-  conversationId,
-  contact,
-  onBack,
-  onShowDetail,
-}: {
-  conversationId: string | null;
-  contact: ConversationWithContact | null;
-  onBack?: () => void;
-  onShowDetail?: () => void;
-}) => {
-  const [messageText, setMessageText] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  const { data: messages = [], isLoading } = useMessages(conversationId);
-  const { mutate: sendMessage, isPending: isSending } =
-    useSendMessage(conversationId);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSend = () => {
-    if (!messageText.trim() || !conversationId) return;
-    sendMessage(messageText, { onSuccess: () => setMessageText("") });
-  };
-
-  const contactName =
-    contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
-  const contactPhone = contact?.contact?.phone ?? "";
-
-  if (!conversationId) {
-    return (
-      <main className="flex-1 flex items-center justify-center bg-gray-50 border-4 border-gray-100">
-        <div className="text-center">
-          <MessageSquare size={36} className="text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Select a conversation</p>
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="flex-1 flex flex-col border-4 border-gray-100 overflow-hidden bg-white min-w-0">
-      {/* Chat Header */}
-      <div className="px-4 py-3 border-b border-slate-200 shrink-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 min-w-0">
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="md:hidden mt-0.5 text-slate-500 hover:text-slate-700 shrink-0"
-              >
-                <ChevronLeft size={18} />
-              </button>
-            )}
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm font-bold text-slate-800 whitespace-nowrap">
-                  {contactName}
-                </h2>
-                <span className="text-xs text-slate-400 hidden sm:inline">
-                  Assignee
-                </span>
-                <span className="text-xs font-semibold text-violet-600 cursor-pointer hidden sm:inline">
-                  John Doe
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">{contactPhone}</p>
-              <span className="inline-block mt-1 text-[10px] bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">
-                whatsapp
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <div className="hidden md:flex items-center gap-1.5">
-              {["Select Stage", "Assign to", "Open"].map((label) => (
-                <button
-                  key={label}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
-                >
-                  {label} <ChevronDown size={11} />
-                </button>
-              ))}
-            </div>
-            {onShowDetail && (
-              <button
-                onClick={onShowDetail}
-                className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-800 hover:bg-slate-100 transition-colors"
-              >
-                <Info size={16} />
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="flex md:hidden items-center gap-1.5 mt-2 overflow-x-auto">
-          {["Select Stage", "Assign to", "Open"].map((label) => (
-            <button
-              key={label}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-medium text-slate-600 whitespace-nowrap shrink-0"
-            >
-              {label} <ChevronDown size={10} />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-gray-100 flex flex-col gap-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full gap-2 text-slate-400">
-            <Loader2 size={16} className="animate-spin" />
-            <span className="text-sm">Loading messages...</span>
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-slate-400">
-              No messages yet. Say hello!
-            </p>
-          </div>
-        ) : (
-          messages.map((msg) => {
-            const isAgent = msg.direction === "outbound";
-            return (
-              <div
-                key={msg.id}
-                className={`flex flex-col ${isAgent ? "items-end" : "items-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] sm:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
-                    isAgent
-                      ? "bg-violet-600 text-white rounded-br-sm"
-                      : "bg-white text-slate-700 rounded-bl-sm"
-                  }`}
-                >
-                  {msg.body}
-                </div>
-                <span className="text-[10px] text-slate-400 mt-1 px-1">
-                  {new Date(msg.sentAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </div>
-            );
-          })
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Input */}
-      <div className="border-t border-slate-200 bg-white shrink-0">
-        <div className="px-4 pt-3 pb-2">
-          <input
-            type="text"
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            placeholder="Type a message"
-            className="w-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none bg-transparent"
-          />
-        </div>
-        <div className="flex items-center justify-between px-4 pb-3">
-          <div className="flex items-center gap-3">
-            <button className="text-slate-400 hover:text-slate-600 transition-colors">
-              <Paperclip size={16} />
-            </button>
-            <button className="text-slate-400 hover:text-slate-600 transition-colors">
-              <SmilePlus size={16} />
-            </button>
-            <button className="hidden sm:block text-slate-400 hover:text-slate-600 transition-colors">
-              <SquarePen size={16} />
-            </button>
-            <button className="hidden sm:block text-slate-400 hover:text-slate-600 transition-colors">
-              <Type size={16} />
-            </button>
-          </div>
-          <button
-            onClick={handleSend}
-            disabled={isSending || !messageText.trim()}
-            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            {isSending ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : (
-              <>
-                <Send size={13} />
-              </>
-            )}
-            Send
-          </button>
-        </div>
-      </div>
-    </main>
-  );
-};
-
-// ─── Right Panel — Detail ─────────────────────────────────────────────────────
 
 const DetailPanel = ({
   contact,
@@ -770,13 +546,10 @@ const TeamInbox = () => {
     );
   }
 
-  if (!isConnected) {
-    return <ConnectWhatsapp />;
-  }
+  if (!isConnected) return <ConnectWhatsapp />;
 
   return (
     <div className="flex flex-1 overflow-hidden w-full h-full">
-      {/* ── Mobile ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-1 lg:hidden overflow-hidden">
         {activePanel === "list" && (
           <ContactList
@@ -802,7 +575,6 @@ const TeamInbox = () => {
         )}
       </div>
 
-      {/* ── Desktop ─────────────────────────────────────────────────────────── */}
       <div className="hidden lg:flex flex-1 overflow-hidden">
         <ContactList
           activeId={activeConversationId ?? ""}

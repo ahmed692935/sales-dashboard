@@ -38,7 +38,22 @@ export interface Message {
   conversationId: string;
   waMessageId: string | null;
   direction: "inbound" | "outbound";
+  type: string;
   body: string;
+  mediaId: string | null;
+  mediaUrl: string | null;
+  mimeType: string | null;
+  filename: string | null;
+  caption: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationName: string | null;
+  locationAddress: string | null;
+  reactionEmoji: string | null;
+  reactionTargetId: string | null;
+  interactiveType: string | null;
+  interactiveId: string | null;
+  interactiveTitle: string | null;
   status: "sent" | "delivered" | "read" | "failed";
   sentAt: string;
 }
@@ -108,6 +123,34 @@ const whatsappService = {
     return data.data;
   },
 
+  uploadMedia: async (file: File): Promise<string> => {
+    const form = new FormData();
+    form.append("file", file);
+    const { data } = await api.post("/whatsapp/media/upload", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data.data.mediaId;
+  },
+
+  sendMediaMessage: async (
+    conversationId: string,
+    type: string,
+    mediaId: string,
+    caption?: string,
+    filename?: string,
+  ): Promise<Message> => {
+    const { data } = await api.post(
+      `/whatsapp/conversations/${conversationId}/send-media`,
+      { type, mediaId, caption, filename },
+    );
+    return data.data;
+  },
+
+  getMediaUrl: async (mediaId: string): Promise<string> => {
+    const { data } = await api.get(`/whatsapp/media/${mediaId}/url`);
+    return data.data.url;
+  },
+
   getContacts: async (
     params: ContactsParams = {},
   ): Promise<PaginatedContactsResponse> => {
@@ -119,11 +162,13 @@ const whatsappService = {
     phone: string,
     body: string,
     templateName?: string,
+    name?: string,
   ) => {
     const { data } = await api.post("/whatsapp/conversations/initiate", {
       phone,
       body,
       templateName,
+      name,
     });
     return data.data;
   },
