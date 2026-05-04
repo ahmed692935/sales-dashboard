@@ -88,7 +88,7 @@ import type { ReactNode } from "react";
 //   items: SidebarEntry[];
 // }
 
-export type LayoutType = "dashboard" | "simple" | "chat";
+export type LayoutType = "dashboard" | "simple" | "chat" | "none";
 
 export interface NavItem {
   label: string;

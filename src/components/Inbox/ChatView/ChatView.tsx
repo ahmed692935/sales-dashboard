@@ -20,8 +20,12 @@ import {
   useMessages,
   useSendMessage,
   useUploadAndSendMedia,
+  useAssignConversation,
+  useUnassignConversation,
 } from "../../../hooks/useWhatsapp";
 import { MessageBubble } from "../MessageBubble/MessageBubble";
+import { AssigneeDropdown } from "../AssignedDropdown/AssignedDropdown";
+import ConfirmationModal from "../../global/ConfirmModal/ConfirmModal";
 
 interface ChatViewProps {
   conversationId: string | null;
@@ -69,8 +73,16 @@ const AttachmentMenu = ({
   }, [onClose]);
 
   const items = [
-    { label: "Photos & Videos", icon: <Image size={16} />, value: "media" as const },
-    { label: "Document", icon: <FileText size={16} />, value: "document" as const },
+    {
+      label: "Photos & Videos",
+      icon: <Image size={16} />,
+      value: "media" as const,
+    },
+    {
+      label: "Document",
+      icon: <FileText size={16} />,
+      value: "document" as const,
+    },
     { label: "Audio", icon: <Music size={16} />, value: "audio" as const },
   ];
 
@@ -82,7 +94,10 @@ const AttachmentMenu = ({
       {items.map((item) => (
         <button
           key={item.value}
-          onClick={() => { onSelect(item.value); onClose(); }}
+          onClick={() => {
+            onSelect(item.value);
+            onClose();
+          }}
           className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
         >
           <span className="text-violet-500">{item.icon}</span>
@@ -145,7 +160,9 @@ const MediaPreview = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-slate-700 truncate">{pending.file.name}</p>
+        <p className="text-xs font-medium text-slate-700 truncate">
+          {pending.file.name}
+        </p>
         <p className="text-[10px] text-slate-400 mt-0.5">
           {(pending.file.size / 1024).toFixed(0)} KB
         </p>
@@ -165,7 +182,11 @@ const MediaPreview = ({
         disabled={isSending}
         className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium transition-colors disabled:opacity-50"
       >
-        {isSending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+        {isSending ? (
+          <Loader2 size={12} className="animate-spin" />
+        ) : (
+          <Send size={12} />
+        )}
         Send
       </button>
     </div>
@@ -184,6 +205,10 @@ export const ChatView = ({
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [pendingFile, setPendingFile] = useState<PendingFile | null>(null);
   const [caption, setCaption] = useState("");
+  const [pendingAssignee, setPendingAssignee] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
@@ -191,8 +216,13 @@ export const ChatView = ({
   const audioInputRef = useRef<HTMLInputElement>(null);
 
   const { data: messages = [], isLoading } = useMessages(conversationId);
-  const { mutate: sendMessage, isPending: isSending } = useSendMessage(conversationId);
-  const { mutate: sendMedia, isPending: isSendingMedia } = useUploadAndSendMedia(conversationId);
+  const { mutate: sendMessage, isPending: isSending } =
+    useSendMessage(conversationId);
+  const { mutate: sendMedia, isPending: isSendingMedia } =
+    useUploadAndSendMedia(conversationId);
+  const { mutate: assign, isPending: isAssigning } =
+    useAssignConversation(conversationId);
+  const { mutate: unassign } = useUnassignConversation(conversationId);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -212,7 +242,11 @@ export const ChatView = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPendingFile({ file, previewUrl: buildPreviewUrl(file), type: resolveFileType(file) });
+    setPendingFile({
+      file,
+      previewUrl: buildPreviewUrl(file),
+      type: resolveFileType(file),
+    });
     setCaption("");
     e.target.value = "";
   };
@@ -236,9 +270,37 @@ export const ChatView = ({
     setCaption("");
   };
 
-  const contactName = contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
+  const handleConfirmAssign = () => {
+    assign(pendingAssignee?.id ?? null, {
+      onSuccess: () => setPendingAssignee(null),
+    });
+  };
+
+  const contactName =
+    contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
   const contactPhone = contact?.contact?.phone ?? "";
   const isBusy = isSending || isSendingMedia;
+
+  const assigneeButtons = (
+    <>
+      <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
+        Select Stage <ChevronDown size={11} />
+      </button>
+      <AssigneeDropdown
+        assignedUser={contact?.assignedUser ?? null}
+        onSelect={(user) => {
+          if (user === null) {
+            unassign();
+          } else {
+            setPendingAssignee(user);
+          }
+        }}
+      />
+      <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
+        Open <ChevronDown size={11} />
+      </button>
+    </>
+  );
 
   if (!conversationId) {
     return (
@@ -267,11 +329,9 @@ export const ChatView = ({
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm font-bold text-slate-800 whitespace-nowrap">{contactName}</h2>
-                <span className="text-xs text-slate-400 hidden sm:inline">Assignee</span>
-                <span className="text-xs font-semibold text-violet-600 cursor-pointer hidden sm:inline">
-                  John Doe
-                </span>
+                <h2 className="text-sm font-bold text-slate-800 whitespace-nowrap">
+                  {contactName}
+                </h2>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">{contactPhone}</p>
               <span className="inline-block mt-1 text-[10px] bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">
@@ -279,16 +339,10 @@ export const ChatView = ({
               </span>
             </div>
           </div>
+
           <div className="flex items-center gap-1.5 shrink-0">
             <div className="hidden md:flex items-center gap-1.5">
-              {["Select Stage", "Assign to", "Open"].map((label) => (
-                <button
-                  key={label}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
-                >
-                  {label} <ChevronDown size={11} />
-                </button>
-              ))}
+              {assigneeButtons}
             </div>
             {onShowDetail && (
               <button
@@ -300,15 +354,9 @@ export const ChatView = ({
             )}
           </div>
         </div>
+
         <div className="flex md:hidden items-center gap-1.5 mt-2 overflow-x-auto">
-          {["Select Stage", "Assign to", "Open"].map((label) => (
-            <button
-              key={label}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-medium text-slate-600 whitespace-nowrap shrink-0"
-            >
-              {label} <ChevronDown size={10} />
-            </button>
-          ))}
+          {assigneeButtons}
         </div>
       </div>
 
@@ -321,7 +369,9 @@ export const ChatView = ({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-slate-400">No messages yet. Say hello!</p>
+            <p className="text-sm text-slate-400">
+              No messages yet. Say hello!
+            </p>
           </div>
         ) : (
           messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)
@@ -329,7 +379,6 @@ export const ChatView = ({
         <div ref={bottomRef} />
       </div>
 
-      {/* Media preview strip — shown above input when file selected */}
       {pendingFile && (
         <MediaPreview
           pending={pendingFile}
@@ -341,10 +390,27 @@ export const ChatView = ({
         />
       )}
 
-      {/* Hidden file inputs — one per type for correct accept filters */}
-      <input ref={mediaInputRef}    type="file" className="hidden" accept="image/*,video/*"                                                onChange={handleFileChange} />
-      <input ref={documentInputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,application/*,text/plain"  onChange={handleFileChange} />
-      <input ref={audioInputRef}    type="file" className="hidden" accept="audio/*"                                                        onChange={handleFileChange} />
+      <input
+        ref={mediaInputRef}
+        type="file"
+        className="hidden"
+        accept="image/*,video/*"
+        onChange={handleFileChange}
+      />
+      <input
+        ref={documentInputRef}
+        type="file"
+        className="hidden"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,application/*,text/plain"
+        onChange={handleFileChange}
+      />
+      <input
+        ref={audioInputRef}
+        type="file"
+        className="hidden"
+        accept="audio/*"
+        onChange={handleFileChange}
+      />
 
       {/* Input bar */}
       <div className="border-t border-slate-200 bg-white shrink-0">
@@ -353,7 +419,9 @@ export const ChatView = ({
             type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendText()}
+            onKeyDown={(e) =>
+              e.key === "Enter" && !e.shiftKey && handleSendText()
+            }
             placeholder="Type a message"
             className="w-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none bg-transparent"
           />
@@ -388,11 +456,27 @@ export const ChatView = ({
             disabled={isBusy || !messageText.trim()}
             className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
           >
-            {isSending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+            {isSending ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <Send size={13} />
+            )}
             Send
           </button>
         </div>
       </div>
+
+      {pendingAssignee && (
+        <ConfirmationModal
+          variant="warning"
+          title="Assign Conversation"
+          message={`Assign this conversation to ${pendingAssignee.name}?`}
+          confirmLabel="Assign"
+          isLoading={isAssigning}
+          onConfirm={handleConfirmAssign}
+          onCancel={() => setPendingAssignee(null)}
+        />
+      )}
     </main>
   );
 };

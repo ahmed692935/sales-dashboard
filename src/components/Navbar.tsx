@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { NavItem } from "../types";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/images/chattick.io.svg";
 
 const navItems: NavItem[] = [
   { label: "Team Inbox", path: "/inbox", icon: <Inbox size={16} /> },
@@ -74,7 +75,7 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }: NavbarProps) => {
 
   return (
     <header className="bg-white border-b border-slate-200 shrink-0 z-40 relative">
-      <div className="flex items-center h-14 px-4">
+      <div className="flex items-center h-16 px-4">
         {/* Mobile hamburger */}
         <button
           className="lg:hidden mr-3 p-1.5 rounded-md text-slate-500 hover:bg-slate-100 transition-colors"
@@ -86,14 +87,11 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }: NavbarProps) => {
 
         {/* Logo — desktop */}
         <div className="hidden lg:flex flex-col justify-center w-44 shrink-0">
-          <span className="text-xs text-slate-400 leading-none mb-1">
-            {user?.role ?? "—"}
-          </span>
           <span
             className="text-2xl font-bold cursor-pointer text-slate-800 leading-none tracking-tight"
             onClick={() => navigate("/dashboard")}
           >
-            LOGO
+            <img src={logo} alt="Chattick.io" className="h-10" />
           </span>
         </div>
 
@@ -103,7 +101,7 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }: NavbarProps) => {
             className="text-xl font-bold cursor-pointer text-slate-800 leading-none tracking-tight"
             onClick={() => navigate("/")}
           >
-            LOGO
+            <img src={logo} alt="Chattick.io" className="h-10" />
           </span>
         </div>
 

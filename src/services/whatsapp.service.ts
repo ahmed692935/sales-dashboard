@@ -30,6 +30,7 @@ export interface Conversation {
 export interface ConversationWithContact {
   conversation: Conversation;
   contact: WhatsappContact | null;
+  assignedUser: { id: string; name: string } | null;
 }
 
 export interface Message {
@@ -170,6 +171,21 @@ const whatsappService = {
       templateName,
       name,
     });
+    return data.data;
+  },
+
+  assignConversation: async (conversationId: string, userId: string | null) => {
+    const { data } = await api.patch(
+      `/whatsapp/conversations/${conversationId}/assign`,
+      { userId },
+    );
+    return data.data;
+  },
+
+  unassignConversation: async (conversationId: string) => {
+    const { data } = await api.delete(
+      `/whatsapp/conversations/${conversationId}/assign`,
+    );
     return data.data;
   },
 };

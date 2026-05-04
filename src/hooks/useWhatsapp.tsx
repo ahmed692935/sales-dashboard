@@ -138,6 +138,35 @@ export const useInitiateConversation = () => {
   });
 };
 
+export const useAssignConversation = (conversationId: string | null) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string | null) =>
+      whatsappService.assignConversation(conversationId!, userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["whatsapp-conversations"] });
+      toast.success("Conversation assigned");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error ?? "Failed to assign");
+    },
+  });
+};
+
+export const useUnassignConversation = (conversationId: string | null) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => whatsappService.unassignConversation(conversationId!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["whatsapp-conversations"] });
+      toast.success("Conversation unassigned");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error ?? "Failed to unassign");
+    },
+  });
+};
+
 function resolveMediaType(mimeType: string): string {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";

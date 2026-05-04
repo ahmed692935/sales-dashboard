@@ -24,6 +24,7 @@ import {
 import type { ConversationWithContact } from "../services/whatsapp.service";
 import { NewConversationModal } from "../components/Inbox/NewConversationsModal/NewConversationsModal";
 import { ChatView } from "../components/Inbox/ChatView/ChatView";
+import { useSearchParams } from "react-router-dom";
 
 type ActivePanel = "list" | "chat" | "detail";
 
@@ -512,13 +513,12 @@ const DetailPanel = ({
   );
 };
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
 const TeamInbox = () => {
-  const [activeConversationId, setActiveConversationId] = useState<
-    string | null
-  >(null);
-  const [activePanel, setActivePanel] = useState<ActivePanel>("list");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const conversationId = searchParams.get("chat_id");
+  const [activePanel, setActivePanel] = useState<ActivePanel>(
+    conversationId ? "chat" : "list",
+  );
 
   const { data: statusData, isLoading: statusLoading } = useWhatsappStatus();
   const { data: conversations = [] } = useConversations(
@@ -527,12 +527,16 @@ const TeamInbox = () => {
 
   const isConnected = statusData?.connected ?? false;
   const activeConversation =
-    conversations.find((c) => c.conversation.id === activeConversationId) ??
-    null;
+    conversations.find((c) => c.conversation.id === conversationId) ?? null;
 
   const handleSelectContact = (id: string) => {
-    setActiveConversationId(id);
+    setSearchParams({ chat_id: id });
     setActivePanel("chat");
+  };
+
+  const handleBack = () => {
+    setSearchParams({});
+    setActivePanel("list");
   };
 
   if (statusLoading) {
@@ -553,7 +557,7 @@ const TeamInbox = () => {
       <div className="flex flex-1 lg:hidden overflow-hidden">
         {activePanel === "list" && (
           <ContactList
-            activeId={activeConversationId ?? ""}
+            activeId={conversationId ?? ""}
             onSelect={handleSelectContact}
             onClose={() => {}}
             isConnected={isConnected}
@@ -561,9 +565,9 @@ const TeamInbox = () => {
         )}
         {activePanel === "chat" && (
           <ChatView
-            conversationId={activeConversationId}
+            conversationId={conversationId}
             contact={activeConversation}
-            onBack={() => setActivePanel("list")}
+            onBack={handleBack}
             onShowDetail={() => setActivePanel("detail")}
           />
         )}
@@ -577,13 +581,13 @@ const TeamInbox = () => {
 
       <div className="hidden lg:flex flex-1 overflow-hidden">
         <ContactList
-          activeId={activeConversationId ?? ""}
+          activeId={conversationId ?? ""}
           onSelect={handleSelectContact}
           onClose={() => {}}
           isConnected={isConnected}
         />
         <ChatView
-          conversationId={activeConversationId}
+          conversationId={conversationId}
           contact={activeConversation}
         />
         <DetailPanel contact={activeConversation} />

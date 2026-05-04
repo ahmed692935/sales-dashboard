@@ -32,13 +32,13 @@ const routeConfigs: RouteConfig[] = [
   {
     path: "/",
     element: <Login />,
-    layout: "simple",
+    layout: "none",
     label: "Login",
   },
   {
     path: "/register",
     element: <Register />,
-    layout: "simple",
+    layout: "none",
     label: "Register",
   },
   {
@@ -125,6 +125,7 @@ const layoutWrappers: Record<LayoutType, (children: ReactNode) => ReactNode> = {
   dashboard: (children) => <DashboardLayout>{children}</DashboardLayout>,
   simple: (children) => <SimpleLayout>{children}</SimpleLayout>,
   chat: (children) => <ChatLayout>{children}</ChatLayout>,
+  none: (children) => <>{children}</>,
 };
 
 const AppRouter = () => {
