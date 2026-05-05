@@ -27,6 +27,7 @@ import SalesAnalytics from "../pages/SalesAnalytics";
 import Automations from "../pages/Automations";
 import Login from "../pages/Login";
 import Register from "../pages/Resigter";
+import KanbanPage from "../pages/Kanban";
 
 const routeConfigs: RouteConfig[] = [
   {
@@ -118,6 +119,12 @@ const routeConfigs: RouteConfig[] = [
     element: <TeamInbox />,
     layout: "chat",
     label: "Team Inbox",
+  },
+  {
+    path: "/kanban",
+    element: <KanbanPage />,
+    layout: "dashboard",
+    label: "Kanban",
   },
 ];
 

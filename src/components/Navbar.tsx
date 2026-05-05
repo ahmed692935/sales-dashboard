@@ -18,6 +18,12 @@ import { useAuth } from "../context/AuthContext";
 import logo from "../assets/images/chattick.io.svg";
 
 const navItems: NavItem[] = [
+  {
+    label: "Kanban Board",
+    path: "/kanban",
+    icon: <GitBranch size={16} />,
+    disabled: false,
+  },
   { label: "Team Inbox", path: "/inbox", icon: <Inbox size={16} /> },
   {
     label: "Campaigns",

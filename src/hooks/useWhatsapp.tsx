@@ -167,6 +167,22 @@ export const useUnassignConversation = (conversationId: string | null) => {
   });
 };
 
+export const useUpdateStage = (conversationId: string | null) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (stage: string | null) =>
+      whatsappService.updateStage(conversationId!, stage),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["whatsapp-conversations"] });
+      qc.invalidateQueries({ queryKey: ["kanban-conversations"] });
+      toast.success("Stage updated");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error ?? "Failed to update stage");
+    },
+  });
+};
+
 function resolveMediaType(mimeType: string): string {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";

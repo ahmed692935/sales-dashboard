@@ -188,6 +188,17 @@ const whatsappService = {
     );
     return data.data;
   },
+
+  updateStage: async (
+    conversationId: string,
+    stage: string | null,
+  ): Promise<Conversation> => {
+    const { data } = await api.patch(
+      `/leads/conversations/${conversationId}/stage`,
+      { stage },
+    );
+    return data.data;
+  },
 };
 
 export default whatsappService;

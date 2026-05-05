@@ -22,10 +22,12 @@ import {
   useUploadAndSendMedia,
   useAssignConversation,
   useUnassignConversation,
+  useUpdateStage,
 } from "../../../hooks/useWhatsapp";
 import { MessageBubble } from "../MessageBubble/MessageBubble";
 import { AssigneeDropdown } from "../AssignedDropdown/AssignedDropdown";
 import ConfirmationModal from "../../global/ConfirmModal/ConfirmModal";
+import { StageDropdown, type Stage } from "../StageDropdown/StageDropdown";
 
 interface ChatViewProps {
   conversationId: string | null;
@@ -223,6 +225,8 @@ export const ChatView = ({
   const { mutate: assign, isPending: isAssigning } =
     useAssignConversation(conversationId);
   const { mutate: unassign } = useUnassignConversation(conversationId);
+  const { mutate: updateStage, isPending: isUpdatingStage } =
+    useUpdateStage(conversationId);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -279,21 +283,21 @@ export const ChatView = ({
   const contactName =
     contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
   const contactPhone = contact?.contact?.phone ?? "";
+  const currentStage = ((contact?.conversation as any)?.stage as Stage) ?? null;
   const isBusy = isSending || isSendingMedia;
 
-  const assigneeButtons = (
+  const headerButtons = (
     <>
-      <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
-        Select Stage <ChevronDown size={11} />
-      </button>
+      <StageDropdown
+        value={currentStage}
+        onSelect={(stage) => updateStage(stage)}
+        disabled={isUpdatingStage}
+      />
       <AssigneeDropdown
         assignedUser={contact?.assignedUser ?? null}
         onSelect={(user) => {
-          if (user === null) {
-            unassign();
-          } else {
-            setPendingAssignee(user);
-          }
+          if (user === null) unassign();
+          else setPendingAssignee(user);
         }}
       />
       <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
@@ -328,11 +332,9 @@ export const ChatView = ({
               </button>
             )}
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm font-bold text-slate-800 whitespace-nowrap">
-                  {contactName}
-                </h2>
-              </div>
+              <h2 className="text-sm font-bold text-slate-800 whitespace-nowrap">
+                {contactName}
+              </h2>
               <p className="text-xs text-slate-500 mt-0.5">{contactPhone}</p>
               <span className="inline-block mt-1 text-[10px] bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">
                 whatsapp
@@ -342,7 +344,7 @@ export const ChatView = ({
 
           <div className="flex items-center gap-1.5 shrink-0">
             <div className="hidden md:flex items-center gap-1.5">
-              {assigneeButtons}
+              {headerButtons}
             </div>
             {onShowDetail && (
               <button
@@ -356,7 +358,7 @@ export const ChatView = ({
         </div>
 
         <div className="flex md:hidden items-center gap-1.5 mt-2 overflow-x-auto">
-          {assigneeButtons}
+          {headerButtons}
         </div>
       </div>
 
