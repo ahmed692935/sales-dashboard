@@ -1,10 +1,17 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap');
 
+@theme {
+  --color-primary: #7364FF;
+  --color-primary-hover: #5f4fff;
+}
+
 :root {
   --primary: #7364FF;
   --primary-hover: #5f4fff;
   --theme-color: #7364FF;
+  --color-primary: #7364FF;
+  --color-primary-hover: #5f4fff;
 }
 
 body {

@@ -109,7 +109,7 @@ export const MessageBubble = ({ msg }: MessageBubbleProps) => {
       <div
         className={`max-w-[85%] sm:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
           isAgent
-            ? "bg-violet-600 text-white rounded-br-sm"
+            ? "bg-primary text-white rounded-br-sm"
             : "bg-white text-slate-700 rounded-bl-sm"
         }`}
       >

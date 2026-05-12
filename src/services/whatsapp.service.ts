@@ -23,6 +23,7 @@ export interface Conversation {
   contactId: string;
   assignedTo: string | null;
   status: "open" | "closed";
+  stage: string | null;
   lastMessageAt: string;
   createdAt: string;
 }

@@ -3,17 +3,8 @@ import {
   ArrowLeft,
   Search,
   SlidersHorizontal,
-  Paperclip,
-  SmilePlus,
   Plus,
-  Pencil,
   MessageSquare,
-  Hash,
-  Phone,
-  MapPin,
-  Check,
-  Circle,
-  ChevronLeft,
   Loader2,
 } from "lucide-react";
 import {
@@ -21,10 +12,10 @@ import {
   useConversations,
   useConnectWhatsapp,
 } from "../hooks/useWhatsapp";
-import type { ConversationWithContact } from "../services/whatsapp.service";
 import { NewConversationModal } from "../components/Inbox/NewConversationsModal/NewConversationsModal";
 import { ChatView } from "../components/Inbox/ChatView/ChatView";
 import { useSearchParams } from "react-router-dom";
+import { DetailPanel } from "../components/Inbox/DetailPanel/DetailPanel";
 
 type ActivePanel = "list" | "chat" | "detail";
 
@@ -327,192 +318,6 @@ const ContactList = ({
   );
 };
 
-const DetailPanel = ({
-  contact,
-  onBack,
-}: {
-  contact: ConversationWithContact | null;
-  onBack?: () => void;
-}) => {
-  const [note, setNote] = useState("");
-
-  const tags = ["Tag 1", "Tag 2"];
-  const customFields = ["Tag 1", "Tag 2"];
-
-  const journeySteps = [
-    { label: "Step Name", description: "Step Description", completed: true },
-    { label: "Step Name", description: "Step Description", completed: false },
-  ];
-
-  const name = contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
-  const phone = contact?.contact?.phone ?? "—";
-
-  const detailRows = [
-    { icon: <MessageSquare size={13} />, label: "Channel", value: "WhatsApp" },
-    {
-      icon: <Hash size={13} />,
-      label: "ID",
-      value: contact?.conversation.id.slice(0, 13) ?? "—",
-    },
-    { icon: <Phone size={13} />, label: "Phone num..", value: phone },
-    { icon: <MapPin size={13} />, label: "Address", value: "—" },
-  ];
-
-  return (
-    <aside className="bg-white border-l border-4 border-gray-100 flex flex-col overflow-y-auto w-full lg:w-68 xl:w-70 shrink-0 h-full">
-      {onBack && (
-        <div className="lg:hidden flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700"
-          >
-            <ChevronLeft size={15} />
-            <span className="text-sm font-medium">Back to chat</span>
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100">
-        <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-          {name.charAt(0).toUpperCase()}
-        </div>
-        <span className="flex-1 text-sm font-semibold text-slate-800">
-          {name}
-        </span>
-        <button className="flex items-center gap-1 text-[12px] text-black hover:text-slate-700">
-          <Pencil size={11} /> Edit
-        </button>
-      </div>
-
-      <div className="px-4 py-4 rounded-md">
-        {detailRows.map((row) => (
-          <div key={row.label} className="flex py-2">
-            <div className="flex items-center gap-2 w-28 shrink-0">
-              <span className="text-slate-700">{row.icon}</span>
-              <span className="text-xs text-black">{row.label}</span>
-            </div>
-            <div className="flex-1 min-w-0 text-xs text-black wrap-break-words">
-              {row.value}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="px-4 py-2.5 border-b border-slate-100">
-        <button className="flex items-center gap-1.5 text-[11px] text-black hover:text-slate-600">
-          <Plus size={13} /> Add new attribute
-        </button>
-      </div>
-
-      <div className="px-4 py-3 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[12px] font-semibold text-black">Tags</span>
-          <button className="text-black hover:text-slate-600">
-            <Plus size={13} />
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-1.5 mb-1">
-          {tags.map((t) => (
-            <span
-              key={t}
-              className="text-[11px] bg-transparent border border-gray-300 text-slate-600 px-4 py-0.5 rounded-lg font-medium"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-        <p className="text-[10px] text-slate-600">No tags Added</p>
-      </div>
-
-      <div className="px-4 py-3 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[12px] font-semibold text-black">
-            Custom User Fields
-          </span>
-          <button className="text-black hover:text-slate-600">
-            <Plus size={13} />
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-1.5 mb-1">
-          {customFields.map((f) => (
-            <span
-              key={f}
-              className="text-[10px] bg-transparent text-black px-4 py-0.5 rounded-lg border border-gray-300 font-medium"
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-        <p className="text-[10px] text-slate-600">No custom field added</p>
-      </div>
-
-      <div className="px-4 py-3 border-b border-slate-100">
-        <span className="text-[13px] font-semibold text-black block mb-2">
-          Notes
-        </span>
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Write a note..."
-          rows={3}
-          className="w-full text-[11px] text-slate-700 placeholder-slate-400 focus:outline-none resize-none bg-gray-100 p-2 rounded-lg"
-        />
-        <div className="flex items-center gap-2 mt-1">
-          <button className="text-slate-500">
-            <Paperclip size={13} />
-          </button>
-          <button className="text-slate-500">
-            <SmilePlus size={13} />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 py-3">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[12px] font-semibold text-black">
-            Client Journey
-          </span>
-          <button className="text-black hover:text-slate-600">
-            <Plus size={13} />
-          </button>
-        </div>
-        <div className="flex flex-col">
-          {journeySteps.map((step, i) => (
-            <div key={i} className="flex gap-3">
-              <div className="flex flex-col items-center">
-                {step.completed ? (
-                  <div className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                    <Check size={9} className="text-white" />
-                  </div>
-                ) : (
-                  <Circle size={16} className="text-slate-300 shrink-0" />
-                )}
-                {i < journeySteps.length - 1 && (
-                  <div
-                    className="w-px flex-1 bg-slate-200 my-1"
-                    style={{ minHeight: 24 }}
-                  />
-                )}
-              </div>
-              <div className="pb-4">
-                <p className="text-[12px] font-semibold text-slate-700">
-                  {step.label}
-                </p>
-                <p className="text-[10px] text-slate-500">{step.description}</p>
-                {step.completed && (
-                  <span className="text-[10px] text-green-600 font-semibold">
-                    Completed
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </aside>
-  );
-};
-
 const TeamInbox = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const conversationId = searchParams.get("chat_id");
@@ -571,7 +376,7 @@ const TeamInbox = () => {
             onShowDetail={() => setActivePanel("detail")}
           />
         )}
-        {activePanel === "detail" && (
+        {activePanel === "detail" && activeConversation && (
           <DetailPanel
             contact={activeConversation}
             onBack={() => setActivePanel("chat")}
@@ -590,7 +395,7 @@ const TeamInbox = () => {
           conversationId={conversationId}
           contact={activeConversation}
         />
-        <DetailPanel contact={activeConversation} />
+        {activeConversation && <DetailPanel contact={activeConversation} />}
       </div>
     </div>
   );

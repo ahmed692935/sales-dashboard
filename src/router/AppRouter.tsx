@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { lazy } from "react";
 
 // Layouts
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -7,27 +8,28 @@ import ChatLayout from "../layouts/ChatLayout";
 
 // Pages
 // import Home from "../pages/Home";
-import Dashboard from "../pages/Dashboard";
+const Dashboard = lazy(() => import("../pages/Dashboard"));
 // import Chat from "../pages/Chat";
 // import Settings from "../pages/Settings";
 
 import type { ReactNode } from "react";
 import type { LayoutType, RouteConfig } from "../types";
-import Contacts from "../pages/Contacts";
-import Flows from "../pages/Flows";
-import TeamInbox from "../pages/TeamInbox";
-import Stages from "../pages/Stages";
-import Teams from "../pages/Teams";
-import Roles from "../pages/Roles";
-import Members from "../pages/Members";
-import Templates from "../pages/Templates";
-import MessageTemplates from "../pages/MessageTemplates";
-import Compaigns from "../pages/Compaigns";
-import SalesAnalytics from "../pages/SalesAnalytics";
-import Automations from "../pages/Automations";
-import Login from "../pages/Login";
-import Register from "../pages/Resigter";
-import KanbanPage from "../pages/Kanban";
+
+const Contacts = lazy(() => import("../pages/Contacts"));
+const Flows = lazy(() => import("../pages/Flows"));
+const TeamInbox = lazy(() => import("../pages/TeamInbox"));
+const Stages = lazy(() => import("../pages/Stages"));
+const Teams = lazy(() => import("../pages/Teams"));
+const Roles = lazy(() => import("../pages/Roles"));
+const Members = lazy(() => import("../pages/Members"));
+const Templates = lazy(() => import("../pages/Templates"));
+const MessageTemplates = lazy(() => import("../pages/MessageTemplates"));
+const Compaigns = lazy(() => import("../pages/Compaigns"));
+const SalesAnalytics = lazy(() => import("../pages/SalesAnalytics"));
+const Automations = lazy(() => import("../pages/Automations"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Resigter"));
+const KanbanPage = lazy(() => import("../pages/Kanban"));
 
 const routeConfigs: RouteConfig[] = [
   {

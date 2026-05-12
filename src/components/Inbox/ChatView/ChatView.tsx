@@ -24,10 +24,10 @@ import {
   useUnassignConversation,
   useUpdateStage,
 } from "../../../hooks/useWhatsapp";
-import { MessageBubble } from "../MessageBubble/MessageBubble";
 import { AssigneeDropdown } from "../AssignedDropdown/AssignedDropdown";
 import ConfirmationModal from "../../global/ConfirmModal/ConfirmModal";
-import { StageDropdown, type Stage } from "../StageDropdown/StageDropdown";
+import { StageDropdown } from "../StageDropdown/StageDropdown";
+import { ChatMessages } from "../ChatMessages/ChatMessages";
 
 interface ChatViewProps {
   conversationId: string | null;
@@ -283,8 +283,10 @@ export const ChatView = ({
   const contactName =
     contact?.contact?.name ?? contact?.contact?.phone ?? "Unknown";
   const contactPhone = contact?.contact?.phone ?? "";
-  const currentStage = ((contact?.conversation as any)?.stage as Stage) ?? null;
+  const currentStage = contact?.conversation?.stage ?? null;
   const isBusy = isSending || isSendingMedia;
+
+  console.log(currentStage);
 
   const headerButtons = (
     <>
@@ -376,7 +378,7 @@ export const ChatView = ({
             </p>
           </div>
         ) : (
-          messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)
+          <ChatMessages messages={messages} />
         )}
         <div ref={bottomRef} />
       </div>
@@ -417,13 +419,13 @@ export const ChatView = ({
       {/* Input bar */}
       <div className="border-t border-slate-200 bg-white shrink-0">
         <div className="px-4 pt-3 pb-2">
-          <input
-            type="text"
+          <textarea
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
             onKeyDown={(e) =>
               e.key === "Enter" && !e.shiftKey && handleSendText()
             }
+            rows={3}
             placeholder="Type a message"
             className="w-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none bg-transparent"
           />
@@ -456,7 +458,7 @@ export const ChatView = ({
           <button
             onClick={handleSendText}
             disabled={isBusy || !messageText.trim()}
-            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg bg-primary hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
           >
             {isSending ? (
               <Loader2 size={13} className="animate-spin" />

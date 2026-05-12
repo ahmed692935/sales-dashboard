@@ -9,49 +9,26 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Plus } from "lucide-react";
 import { toast } from "react-toastify";
 import api from "../../lib/axios";
 import type { ConversationWithContact } from "../../services/whatsapp.service";
-import type { Stage } from "../Inbox/StageDropdown/StageDropdown";
+import {
+  useStages,
+  useCreateStage,
+  useUpdateStageDef,
+  useDeleteStage,
+} from "../../hooks/useStages";
 import { KanbanColumn } from "./KanbanColumn/KanbanColumn";
 import { KanbanCard } from "./KanbanColumn/KanbanCard";
-
-const STAGE_CONFIG = [
-  {
-    id: "new_lead" as Stage,
-    label: "New Lead",
-    accent: "#7364FF",
-    glow: "#7364FF",
-  },
-  {
-    id: "contacted" as Stage,
-    label: "Contacted",
-    accent: "#3B82F6",
-    glow: "#3B82F6",
-  },
-  {
-    id: "proposal_sent" as Stage,
-    label: "Proposal Sent",
-    accent: "#8B5CF6",
-    glow: "#8B5CF6",
-  },
-  {
-    id: "application_submitted" as Stage,
-    label: "Application Submitted",
-    accent: "#10B981",
-    glow: "#10B981",
-  },
-  { id: "won" as Stage, label: "Won", accent: "#14B8A6", glow: "#14B8A6" },
-  { id: "lost" as Stage, label: "Lost", accent: "#EF4444", glow: "#EF4444" },
-];
+import { AddStageModal } from "./AddLeadStageModal/AddLeadStageModal";
 
 const fetchKanban = async (): Promise<ConversationWithContact[]> => {
   const { data } = await api.get("/leads/kanban");
   return data.data;
 };
 
-const patchStage = async (conversationId: string, stage: Stage) => {
+const patchStage = async (conversationId: string, stage: string) => {
   const { data } = await api.patch(
     `/leads/conversations/${conversationId}/stage`,
     { stage },
@@ -61,17 +38,23 @@ const patchStage = async (conversationId: string, stage: Stage) => {
 
 const Kanban = () => {
   const qc = useQueryClient();
-  const [activeItem, setActiveItem] = useState<ConversationWithContact | null>(
-    null,
-  );
+
+  const [activeItem, setActiveItem] =
+    useState<ConversationWithContact | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
+  const { data: stages = [], isLoading: stagesLoading } = useStages();
+  const { mutate: createStage, isPending: isCreating } = useCreateStage();
+  const { mutate: updateStageDef } = useUpdateStageDef();
+  const { mutate: deleteStage } = useDeleteStage();
+
   const {
     data: rawItems = [],
-    isLoading,
+    isLoading: itemsLoading,
     refetch,
     isFetching,
   } = useQuery({
@@ -80,58 +63,72 @@ const Kanban = () => {
     refetchInterval: 20000,
   });
 
-  const { mutate: updateStage } = useMutation({
-    mutationFn: ({ id, stage }: { id: string; stage: Stage }) =>
-      patchStage(id, stage),
-    onMutate: async ({ id, stage }) => {
+  const stageMap = useMemo(() => {
+    return new Map(stages.map((s) => [s.id, s]));
+  }, [stages]);
+
+  const { mutate: updateConvStage } = useMutation({
+    mutationFn: ({ id, stageId }: { id: string; stageId: string }) =>
+      patchStage(id, stageId),
+
+    onMutate: async ({ id, stageId }) => {
       await qc.cancelQueries({ queryKey: ["kanban-conversations"] });
+
       const prev = qc.getQueryData<ConversationWithContact[]>([
         "kanban-conversations",
       ]);
+
       qc.setQueryData<ConversationWithContact[]>(
         ["kanban-conversations"],
         (old = []) =>
           old.map((item) =>
             item.conversation.id === id
-              ? { ...item, conversation: { ...item.conversation, stage } }
+              ? {
+                  ...item,
+                  conversation: {
+                    ...item.conversation,
+                    stage: stageId,
+                  },
+                }
               : item,
           ),
       );
+
       return { prev };
     },
+
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) qc.setQueryData(["kanban-conversations"], ctx.prev);
+      if (ctx?.prev) {
+        qc.setQueryData(["kanban-conversations"], ctx.prev);
+      }
       toast.error("Failed to update stage");
     },
+
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["kanban-conversations"] });
       qc.invalidateQueries({ queryKey: ["whatsapp-conversations"] });
     },
   });
 
-  // ── Fix 1: proper Record init (no cast error) ─────────────────────────────
   const grouped = useMemo(() => {
-    const map: Record<Stage, ConversationWithContact[]> = {
-      new_lead: [],
-      contacted: [],
-      proposal_sent: [],
-      application_submitted: [],
-      won: [],
-      lost: [],
-    };
+    const map: Record<string, ConversationWithContact[]> = {};
+
+    for (const stage of stages) {
+      map[stage.slug] = [];
+    }
 
     for (const item of rawItems) {
-      // ── Fix 2: skip null stage — don't default to new_lead ────────────────
-      const stage = (item.conversation as any).stage as
-        | Stage
-        | null
-        | undefined;
-      if (stage && map[stage]) {
-        map[stage].push(item);
-      }
+      const stageId = item.conversation.stage;
+      if (!stageId) continue;
+
+      const stage = stageMap.get(stageId);
+      if (!stage) continue;
+
+      map[stage.slug].push(item);
     }
+
     return map;
-  }, [rawItems]);
+  }, [rawItems, stages, stageMap]);
 
   const handleDragStart = (e: DragStartEvent) => {
     const item = rawItems.find((i) => i.conversation.id === e.active.id);
@@ -140,35 +137,69 @@ const Kanban = () => {
 
   const handleDragEnd = (e: DragEndEvent) => {
     setActiveItem(null);
+
     const { active, over } = e;
     if (!over) return;
 
-    const toStage = STAGE_CONFIG.find((s) => s.id === over.id)?.id;
-    if (!toStage) return;
+    const toStageSlug = over.id as string;
 
-    const currentStage = (
-      rawItems.find((i) => i.conversation.id === active.id)?.conversation as any
-    )?.stage as Stage | null;
+    const targetStage = stages.find((s) => s.slug === toStageSlug);
+    if (!targetStage) return;
 
-    if (currentStage === toStage) return;
+    const currentStageId =
+      rawItems.find((i) => i.conversation.id === active.id)?.conversation
+        .stage ?? null;
 
-    updateStage({ id: active.id as string, stage: toStage });
+    if (currentStageId === targetStage.id) return;
+
+    updateConvStage({
+      id: active.id as string,
+      stageId: targetStage.id,
+    });
   };
 
-  const stageTotal = STAGE_CONFIG.reduce(
-    (sum, s) => sum + (grouped[s.id]?.length ?? 0),
+  const handleRenameStage = (stageId: string, newName: string) => {
+    updateStageDef(
+      { id: stageId, name: newName },
+      { onError: () => toast.error("Failed to rename stage") },
+    );
+  };
+
+  const handleDeleteStage = (stageId: string) => {
+    deleteStage(stageId, {
+      onSuccess: () => toast.success("Stage deleted"),
+      onError: () => toast.error("Failed to delete stage"),
+    });
+  };
+
+  const handleAddStage = (name: string, color: string) => {
+    createStage(
+      { name, color },
+      {
+        onSuccess: () => {
+          setShowAddModal(false);
+          toast.success("Stage created");
+        },
+        onError: () => toast.error("Failed to create stage"),
+      },
+    );
+  };
+
+  const stageTotal = stages.reduce(
+    (sum, s) => sum + (grouped[s.slug]?.length ?? 0),
     0,
   );
+
   const unstagedCount = rawItems.length - stageTotal;
+  const isLoading = stagesLoading || itemsLoading;
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Header */}
       <div className="shrink-0 px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
         <div>
           <h1 className="text-base font-bold text-slate-800">Kanban</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Create and manage WhatsApp broadcast campaigns
+            Drag contacts between stages to manage your pipeline
           </p>
         </div>
 
@@ -178,6 +209,7 @@ const Kanban = () => {
               {unstagedCount} unstaged
             </span>
           )}
+
           <button
             onClick={() => refetch()}
             disabled={isFetching}
@@ -186,13 +218,17 @@ const Kanban = () => {
             <RefreshCw size={12} className={isFetching ? "animate-spin" : ""} />
             Refresh
           </button>
-          <button className="btn-primary text-sm px-4 py-2">
-            Add a new contact
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn-primary text-sm px-4 py-2"
+          >
+            <Plus size={14} />
+            Add new Stage
           </button>
         </div>
       </div>
 
-      {/* Board */}
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="flex items-center gap-2 text-slate-400">
@@ -208,11 +244,21 @@ const Kanban = () => {
             onDragEnd={handleDragEnd}
           >
             <div className="flex gap-4 items-start min-w-max h-full">
-              {STAGE_CONFIG.map((stage) => (
+              {stages.map((stage) => (
                 <KanbanColumn
                   key={stage.id}
-                  stage={stage}
-                  items={grouped[stage.id] ?? []}
+                  stage={{
+                    id: stage.slug,
+                    stageId: stage.id,
+                    label: stage.name,
+                    accent: stage.color,
+                    glow: stage.color,
+                  }}
+                  items={grouped[stage.slug] ?? []}
+                  onRename={(newName) =>
+                    handleRenameStage(stage.id, newName)
+                  }
+                  onDelete={() => handleDeleteStage(stage.id)}
                 />
               ))}
             </div>
@@ -223,6 +269,13 @@ const Kanban = () => {
           </DndContext>
         </div>
       )}
+
+      <AddStageModal
+        isOpen={showAddModal}
+        isLoading={isCreating}
+        onClose={() => setShowAddModal(false)}
+        onConfirm={handleAddStage}
+      />
     </div>
   );
 };
