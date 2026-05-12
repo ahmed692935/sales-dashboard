@@ -421,57 +421,61 @@ export const DetailPanel = ({
           </button>
         </div>
         {journey.length > 0 ? (
-          <div className="flex flex-col">
+          <div className="flex flex-col items-center">
             {journey.map((event, i) => (
-              <div key={event.id} className="flex gap-3">
-                <div className="flex flex-col items-center">
-                  {i === 0 ? (
-                    <div className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                      <Check size={9} className="text-white" />
-                    </div>
-                  ) : (
-                    <Circle size={16} className="text-slate-300 shrink-0" />
-                  )}
-                  {i < journey.length - 1 && (
-                    <div
-                      className="w-px flex-1 bg-slate-200 my-1"
-                      style={{ minHeight: 24 }}
-                    />
-                  )}
-                </div>
-                <div className="pb-4">
-                  <p className="text-[12px] font-semibold text-slate-700">
-                    {event.body}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    {new Date(event.sentAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                  {i === 0 && (
-                    <span className="text-[10px] text-green-600 font-semibold">
-                      Latest
-                    </span>
-                  )}
-                </div>
+              <div key={event.id} className="flex flex-col items-center">
+                {/* Icon */}
+                {i === 0 ? (
+                  <div className="w-6 h-6 rounded-full bg-violet-100 border-2 border-violet-500 flex items-center justify-center shrink-0">
+                    <Check size={12} className="text-violet-600" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center shrink-0">
+                    <Check size={14} className="text-gray-400" />
+                  </div>
+                )}
+
+                {/* Text */}
+                <p className="text-[10px] font-semibold text-slate-700 mt-1.5 text-center">
+                  {event.body}
+                </p>
+                <p className="text-[10px] text-slate-500 text-center">
+                  {new Date(event.sentAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </p>
+
+                {/* Line + badge */}
+                {i < journey.length - 1 && (
+                  <div className="flex flex-col items-center my-1">
+                    <div className="w-px h-4 bg-gray-300" />
+                    {i === 0 && (
+                      <span className="text-[10px] text-green-600 font-semibold bg-green-50 px-3 py-0.5 rounded-md my-1">
+                        Completed
+                      </span>
+                    )}
+                    <div className="w-px h-4 bg-gray-300" />
+                  </div>
+                )}
+
+                {/* Last item trailing line */}
+                {i === journey.length - 1 && (
+                  <div className="w-px h-6 bg-gray-300 mt-1" />
+                )}
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col">
-            <div className="flex gap-3">
-              <div className="flex flex-col items-center">
-                <Circle size={16} className="text-slate-300 shrink-0" />
-              </div>
-              <div className="pb-4">
-                <p className="text-[12px] text-slate-400">
-                  No journey events yet
-                </p>
-              </div>
+          <div className="flex flex-col items-center">
+            <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center">
+              <Circle size={14} className="text-gray-400" />
             </div>
+            <p className="text-[11px] text-slate-400 mt-2">
+              No journey events yet
+            </p>
           </div>
         )}
       </div>
