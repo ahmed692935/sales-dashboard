@@ -14,7 +14,11 @@ export interface WhatsappContact {
   orgId: string;
   phone: string;
   name: string | null;
+  profilePicture: string | null;
   createdAt: string;
+  tags: { id: string; label: string; color: string | null }[];
+  notes: { id: string; content: string; createdAt: string }[];
+  customFields: { id: string; key: string; value: string }[];
 }
 
 export interface Conversation {

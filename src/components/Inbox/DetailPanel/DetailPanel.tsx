@@ -421,7 +421,7 @@ export const DetailPanel = ({
           </button>
         </div>
         {journey.length > 0 ? (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center overflow-y-auto max-h-70">
             {journey.map((event, i) => (
               <div key={event.id} className="flex flex-col items-center">
                 {/* Icon */}

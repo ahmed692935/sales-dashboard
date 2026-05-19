@@ -141,7 +141,7 @@ export const PaginatedDropdown = ({
         disabled={disabled}
         className={
           triggerClassName ??
-          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[14px] font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
         }
       >
         {value ? (
